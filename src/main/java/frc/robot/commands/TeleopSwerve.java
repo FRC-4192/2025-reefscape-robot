@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.Constants.DriverConstants;
 import frc.robot.subsystems.SwerveDrive;
 
 public class TeleopSwerve extends Command {
@@ -56,8 +57,8 @@ public class TeleopSwerve extends Command {
 
         swerve.drive(
             new Pose2d(
-                new Translation2d(translationVal, strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? .3 : 1)),
-                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slow.getAsBoolean() ? .3 : 1))
+                new Translation2d(translationVal, strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed)),
+                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed))
             ),
             fieldRelative,
             true

@@ -8,6 +8,9 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import static frc.robot.Constants.SwerveConstants;
 
 
@@ -59,12 +62,20 @@ public class SwerveModule {
         return Rotation2d.fromRotations(steerMotor.getPosition().getValueAsDouble());
     }
 
-    public SwerveModulePosition getModulePosition() {
+    public Rotation2d getAbsoluteAngle() {
+        return Rotation2d.fromRotations(absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+    }
+
+    public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(getDistance(), getAngle());
     }
 
-    public Rotation2d getAbsoluteAngle() {
-        return Rotation2d.fromRotations(absoluteEncoder.getAbsolutePosition().getValueAsDouble());
+    public LinearVelocity getVelocity() {
+        return driveMotor.getVelocity().getValue().asFrequency().times(Distance.ofBaseUnits(SwerveConstants.wheelCircumference, Units.Meter));
+    }    
+
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(getVelocity(), getAngle());
     }
 
     public void resetToAbsolute() {

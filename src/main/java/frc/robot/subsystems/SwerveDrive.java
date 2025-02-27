@@ -3,12 +3,15 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
@@ -40,16 +43,35 @@ public class SwerveDrive extends SubsystemBase {
             // Front-Left, Front-Right, Back-Left, Back-Right
             Pose2d.kZero // x=0, y=0, heading=0
         );
-            
+
+        // AutoBuilder.configure(
+        //     this::getPose,
+        //     this::setPose,
+        //     this::getCurrentVelocity,
+        //     (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+        //     SwerveConstants.autoFollowerController,
+        //     SwerveConstants.autoPathFollowerConfig,
+        //     () -> {
+        //         // Boolean supplier that controls when the path will be mirrored for the red alliance
+        //         // This will flip the path being followed to the red side of the field.
+        //         // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+        //         var alliance = DriverStation.getAlliance();
+        //         if (alliance.isPresent()) {
+        //             return alliance.get() == DriverStation.Alliance.Red;
+        //         }
+        //         return false;
+        //     },
+        //     this
+        // );
     }
 
     public Pose2d getPose() {
-        Pose2d pose = odometry.getPoseMeters();
-        return pose;
+        return odometry.getPoseMeters();
     }
 
     public void setPose(Pose2d pose) {
-        odometry.resetPosition(getGyroYaw(), getCurrentSwerveModulePositions(), pose);
+        odometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
     }
 
     public Rotation2d getHeading() {
@@ -57,7 +79,7 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void setHeading(Rotation2d heading) {
-        odometry.resetPosition(getGyroYaw(), getCurrentSwerveModulePositions(), new Pose2d(getPose().getTranslation(), heading));
+        odometry.resetPosition(getGyroYaw(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
     }
 
     public void zeroHeading(){
@@ -81,6 +103,31 @@ public class SwerveDrive extends SubsystemBase {
         gyro.reset();
     }
 
+    // robot relative
+    public ChassisSpeeds getCurrentVelocity() {
+        return Constants.SwerveConstants.kinematics.toChassisSpeeds(getModuleStates());
+    }
+
+    // Fetch the current swerve module positions.
+    public SwerveModulePosition[] getModulePositions() {
+        return new SwerveModulePosition[]{
+            swerveModules[0].getPosition(),
+            swerveModules[1].getPosition(),
+            swerveModules[2].getPosition(),
+            swerveModules[3].getPosition()
+        };
+    }
+
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[] {
+            swerveModules[0].getState(),
+            swerveModules[1].getState(),
+            swerveModules[2].getState(),
+            swerveModules[3].getState()
+        };
+    }
+
+
     public void drive(ChassisSpeeds chassisSpeeds) {
         drive(chassisSpeeds, true);
     }
@@ -102,19 +149,10 @@ public class SwerveDrive extends SubsystemBase {
         );
     }
     
-    // Fetch the current swerve module positions.
-    public SwerveModulePosition[] getCurrentSwerveModulePositions() {
-        return new SwerveModulePosition[]{
-            swerveModules[0].getModulePosition(),
-            swerveModules[1].getModulePosition(),
-            swerveModules[2].getModulePosition(),
-            swerveModules[3].getModulePosition()
-        };
-    }
     
     @Override
     public void periodic() {
-        odometry.update(getGyroYaw(), getCurrentSwerveModulePositions());
+        odometry.update(getGyroYaw(), getModulePositions());
 
         for(int i = 0; i < 4; i ++){
             SmartDashboard.putNumber("Mod" + i + " encoder (°)", swerveModules[i].getAbsoluteAngle().getDegrees());

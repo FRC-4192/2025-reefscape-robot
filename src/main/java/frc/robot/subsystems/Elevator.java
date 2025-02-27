@@ -1,11 +1,15 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,8 +20,8 @@ import static frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase{
     private final SparkFlex motor, motor2;
 
-    private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(getPosition(), getCurrent());
-    private ProfiledPIDController controller = new ProfiledPIDController(getTarget(), getPosition(), getCurrent(), constraints);
+    private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(0, 0);
+    private ProfiledPIDController controller = new ProfiledPIDController(0, 0, 0, constraints);
 
     private double target;
     private State state = State.L0;
@@ -29,28 +33,40 @@ public class Elevator extends SubsystemBase{
         L3(-1),
         L4(-1);
 
-        private final double position; // units = rotations
+        private final double position; // units = motor rotations
 
         private State(double position) {
             this.position = position;
         }
+
+        public double meters() {
+            return Units.inchesToMeters(inches());
+        }
+        public double inches() {
+            return radians() / 5 * .8755;
+        }
+        public double radians() {
+            return position * 2 * Math.PI;
+        }
     }
 
-    public Elevator(){
-        motor = new SparkFlex(0, MotorType.kBrushless); // change id
-        motor2 = new SparkFlex(0, MotorType.kBrushless); // change id
+    public Elevator() {
+        motor = new SparkFlex(14, MotorType.kBrushless);
+        motor2 = new SparkFlex(15, MotorType.kBrushless);
         SparkFlexConfig config = new SparkFlexConfig();
         config
-            .idleMode(null)
-            .inverted(false);
-        config.softLimit
-            .forwardSoftLimitEnabled(false)
-            .reverseSoftLimitEnabled(false)
-            .forwardSoftLimit(0)
-            .reverseSoftLimit(0);
+            .idleMode(IdleMode.kCoast)
+            .inverted(false)
+            .smartCurrentLimit(40, 35);
+        // config.softLimit
+        //     .forwardSoftLimitEnabled(false)
+        //     .reverseSoftLimitEnabled(false)
+        //     .forwardSoftLimit(0)
+        //     .reverseSoftLimit(0);
         // config.closedLoop.pidf(target, target, target, target)
-        motor.configure(config, null, null);
-        motor2.configure(config.follow(motor), null, null);
+        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        motor2.configure(config.follow(motor, true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        // motor2.configure(config.inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     }
 
     private void motorSetup() {
@@ -90,7 +106,7 @@ public class Elevator extends SubsystemBase{
         return state.position;
     }
     public double getPosition() {
-        return 0;
+        return motor.getEncoder().getPosition();
     }
     public double getVelocity() {
         return 0;
@@ -110,7 +126,9 @@ public class Elevator extends SubsystemBase{
         // motor.set(ElevatorConstants.pidConroller.calculate(getPosition(), getTarget()) + ElevatorConstants.feedforward.calculate())
         SmartDashboard.putNumber("Elevator Target", getTarget());
         SmartDashboard.putNumber("Elevator Position", getPosition());
+        SmartDashboard.putNumber("Elevator 15", motor2.getEncoder().getPosition());
         SmartDashboard.putNumber("Elevator Current (A)", getCurrent());
+        SmartDashboard.putNumber("Elevator Power", motor.get());
     }
 
     /**
@@ -138,5 +156,8 @@ public class Elevator extends SubsystemBase{
         );
     }
 
+    public void runRaw(double power) {
+        motor.set(power);
+    }
 }
 

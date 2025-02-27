@@ -4,9 +4,16 @@
 
 package frc.robot;
 
+import java.io.IOException;
+
+import org.json.simple.parser.ParseException;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -29,6 +36,11 @@ public final class Constants {
     public static final class OperatorConstants {
         public static final int kDriverControllerPort = 0;
         public static final double stickDeadband = .02;
+    }
+
+    public static final class DriverConstants {
+        public static final double swerveMaxSpeed = 0.5;
+        public static final double swerveSlowSpeed = 0.2;
     }
 
     public static final class ElevatorConstants {
@@ -59,13 +71,17 @@ public final class Constants {
             new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0)
         );
         
-        // public static final HolonomicPathFollowerConfig autoPathFollowerConfig = new HolonomicPathFollowerConfig(
+        public static RobotConfig autoPathFollowerConfig;// = RobotConfig.fromGUISettings();
         //     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
         //     new PIDConstants(2.0, 0.0, 0.0), // Rotation PID constants
         //     4.5,//Constants.Swerve.maxSpeed, // Max module speed, in m/s
         //     0.4,//new Translation2d(Constants.Swerve.trackWidth, Constants.Swerve.wheelBase).getNorm() / 2, // Drive base radius in meters. Distance from robot center to furthest module.
         //     new ReplanningConfig() // Default path replanning config. See the API for the options here
         // );
+        public static final PPHolonomicDriveController autoFollowerController = new PPHolonomicDriveController(
+            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
+            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+        );
 
         /* Swerve Profiling Values */
         /** Meters per Second */
@@ -78,10 +94,10 @@ public final class Constants {
 
         // order: fl, fr, bl, br
         public static final ModuleConstants[] moduleConstants = new ModuleConstants[]{
-            new ModuleConstants(1, 0, 0, Rotation2d.fromDegrees(-30.498046875)),
-            new ModuleConstants(7, 6, 1, Rotation2d.fromDegrees(28.652343749999996)),
-            new ModuleConstants(3, 4, 2, Rotation2d.fromDegrees(-118.30078125)),
-            new ModuleConstants(5, 2, 3, Rotation2d.fromDegrees(-25.48828125))
+            new ModuleConstants(1, 8, 10, Rotation2d.fromDegrees(-30.498046875)),
+            new ModuleConstants(7, 6, 11, Rotation2d.fromDegrees(28.652343749999996)),
+            new ModuleConstants(3, 4, 12, Rotation2d.fromDegrees(-118.30078125)),
+            new ModuleConstants(5, 2, 13, Rotation2d.fromDegrees(-25.48828125))
         };
 
         public static final class ModuleConstants {
@@ -100,6 +116,37 @@ public final class Constants {
         
         
         static {
+            // pathplanner config
+            try {
+                autoPathFollowerConfig = RobotConfig.fromGUISettings();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                // autoPathFollowerConfig = new RobotConfig(
+                //     -1,
+                //     -1,
+                //     null,
+                //     null
+                // );
+            } catch (ParseException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                // autoPathFollowerConfig = new RobotConfig(
+                //     -1,
+                //     -1,
+                //     null,
+                //     null
+                // );
+            } finally {
+                // autoPathFollowerConfig = new RobotConfig(
+                //     -1,
+                //     -1,
+                //     null,
+                //     null
+                // );
+            }
+
+
             /** Swerve CANCoder Configuration */
             swerveCANcoderConfig.MagnetSensor.SensorDirection = swerveType.cancoderInvert;
 

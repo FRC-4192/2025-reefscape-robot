@@ -8,11 +8,19 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveDrive;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
@@ -72,10 +80,15 @@ public class RobotContainer {
     // The robot's subsystems and commands are defined here...
     private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
     private final SwerveDrive swerve = new SwerveDrive();
+    private final Elevator elevator = new Elevator();
+    private final Arm arm = new Arm();
 
     // Replace with CommandPS4Controller or CommandJoystick if needed
-    private final CommandXboxController m_driverController =
-        new CommandXboxController(OperatorConstants.kDriverControllerPort);
+    private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+
+
+    // private final SendableChooser<Command> autoChooser;
+    
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -96,8 +109,39 @@ public class RobotContainer {
         //     operator.rightBumper().or(operator.leftStick()).or(operator.rightStick())
         // ));
 
+        elevator.setDefaultCommand(new FunctionalCommand(
+            () -> {},
+            () -> elevator.runRaw(operator.getLeftY()),
+            (x) -> elevator.runRaw(0),
+            () -> false,
+            elevator
+        ));
+
+        arm.setDefaultCommand(new FunctionalCommand(
+            () -> {},
+            () -> arm.runRaw(operator.getRightY()),
+            (x) -> arm.runRaw(0),
+            () -> false,
+            arm
+        ));
+
         // Configure the trigger bindings
         configureBindings();
+
+        // // For convenience a programmer could change this when going to competition.
+        // boolean isCompetition = true;
+
+        // // Build an auto chooser. This will use Commands.none() as the default option.
+        // // As an example, this will only show autos that start with "comp" while at
+        // // competition as defined by the programmer
+        // autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+        // (stream) -> isCompetition
+        //     ? stream.filter(auto -> auto.getName().startsWith("comp"))
+        //     : stream
+        // );
+
+        // autoChooser = AutoBuilder.buildAutoChooser();
+        // SmartDashboard.putData("Auto Chooser", autoChooser);
     }
 
     /**
