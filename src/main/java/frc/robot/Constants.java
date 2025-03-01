@@ -4,17 +4,23 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import java.io.IOException;
 
 import org.json.simple.parser.ParseException;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -22,6 +28,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.COTSTalonFXSwerveConstants;
 
 /**
@@ -34,11 +41,13 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
  */
 public final class Constants {
     public static final class OperatorConstants {
-        public static final int kDriverControllerPort = 0;
+        public static final int controllerPort = 1;
         public static final double stickDeadband = .02;
     }
 
     public static final class DriverConstants {
+        public static final int controllerPort = 0;
+        public static final double stickDeadband = .01;
         public static final double swerveMaxSpeed = 0.5;
         public static final double swerveSlowSpeed = 0.2;
     }
@@ -47,7 +56,21 @@ public final class Constants {
         public static final int[] motorIDs = new int[] {-1, -1};
 
         public static final PIDController pidConroller = new PIDController(0, 0, 0);
-        public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0, 0, 0, 0);
+        public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12, 0.25, 0, 0);
+    }
+
+    public static final class ArmConstants {
+        public static final TalonFXConfiguration wristConfig = new TalonFXConfiguration()
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withSupplyCurrentLimit(25)
+                .withStatorCurrentLimit(25))
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Brake));
+
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
+        
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.2, 0, 0);
     }
 
     public static final class SwerveConstants {
@@ -93,11 +116,11 @@ public final class Constants {
         public static final SimpleMotorFeedforward driveFeedForward = new SimpleMotorFeedforward(0.32, 1.51, 0.27);
 
         // order: fl, fr, bl, br
-        public static final ModuleConstants[] moduleConstants = new ModuleConstants[]{
+        public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
             new ModuleConstants(1, 8, 10, Rotation2d.fromDegrees(-30.498046875)),
             new ModuleConstants(7, 6, 11, Rotation2d.fromDegrees(28.652343749999996)),
-            new ModuleConstants(3, 4, 12, Rotation2d.fromDegrees(-118.30078125)),
-            new ModuleConstants(5, 2, 13, Rotation2d.fromDegrees(-25.48828125))
+            new ModuleConstants(5, 4, 12, Rotation2d.fromDegrees(-118.30078125)),
+            new ModuleConstants(3, 2, 13, Rotation2d.fromDegrees(-161.71875))
         };
 
         public static final class ModuleConstants {

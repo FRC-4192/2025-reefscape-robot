@@ -82,7 +82,7 @@ public class SwerveDrive extends SubsystemBase {
         odometry.resetPosition(getGyroYaw(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
     }
 
-    public void zeroHeading(){
+    public void zeroHeading() {
         setHeading(Rotation2d.kZero);
     }
 

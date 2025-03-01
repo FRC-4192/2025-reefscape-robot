@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
@@ -26,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -35,8 +37,9 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
     /* Controllers */
-    private final XboxController driver = new XboxController(0);
-    private final CommandXboxController operator = new CommandXboxController(1);
+    private final XboxController driver = new XboxController(DriverConstants.controllerPort);
+    private final CommandXboxController operator = new CommandXboxController(OperatorConstants.controllerPort);
+    private final CommandXboxController tester = new CommandXboxController(2);
 
     /* Drive Controls */
     private final int translationAxis = XboxController.Axis.kLeftY.value;
@@ -84,7 +87,7 @@ public class RobotContainer {
     private final Arm arm = new Arm();
 
     // Replace with CommandPS4Controller or CommandJoystick if needed
-    private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
+    // private final CommandXboxController m_driverController = new CommandXboxController(OperatorConstants.kDriverControllerPort);
 
 
     // private final SendableChooser<Command> autoChooser;
@@ -109,18 +112,18 @@ public class RobotContainer {
         //     operator.rightBumper().or(operator.leftStick()).or(operator.rightStick())
         // ));
 
-        elevator.setDefaultCommand(new FunctionalCommand(
-            () -> {},
-            () -> elevator.runRaw(operator.getLeftY()),
-            (x) -> elevator.runRaw(0),
-            () -> false,
-            elevator
-        ));
+        // elevator.setDefaultCommand(new FunctionalCommand(
+        //     () -> {},
+        //     () -> elevator.runRaw(-operator.getLeftY()),
+        //     (x) -> elevator.runRaw(0),
+        //     () -> false,
+        //     elevator
+        // ));
 
         arm.setDefaultCommand(new FunctionalCommand(
             () -> {},
-            () -> arm.runRaw(operator.getRightY()),
-            (x) -> arm.runRaw(0),
+            () -> { arm.runTakeRaw(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis()); arm.runWristRaw(operator.getRightY()); },
+            (x) -> { arm.runTakeRaw(0); arm.runWristRaw(0); },
             () -> false,
             arm
         ));
@@ -142,6 +145,8 @@ public class RobotContainer {
 
         // autoChooser = AutoBuilder.buildAutoChooser();
         // SmartDashboard.putData("Auto Chooser", autoChooser);
+
+        // configureTester();
     }
 
     /**
@@ -160,11 +165,28 @@ public class RobotContainer {
 
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+        // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
 
         new Trigger(driver::getYButtonPressed).onTrue(new InstantCommand(swerve::zeroHeading, swerve));
         // driver.leftBumper().onTrue(new InstantCommand(swerve::))
         operator.a().and(operator.b()).getAsBoolean();
+
+        operator.povDown().onFalse(new InstantCommand(() -> elevator.setTarget(Elevator.State.L1)));
+        operator.povRight().onFalse(new InstantCommand(() -> elevator.setTarget(Elevator.State.L2)));
+    }
+
+    private void configureTester() {
+        // elevator
+        tester.leftBumper().and(tester.a()).whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        tester.leftBumper().and(tester.b()).whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        tester.leftBumper().and(tester.x()).whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        tester.leftBumper().and(tester.y()).whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+        // arm
+        tester.rightBumper().and(tester.a()).whileTrue(arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        tester.rightBumper().and(tester.b()).whileTrue(arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        tester.rightBumper().and(tester.x()).whileTrue(arm.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        tester.rightBumper().and(tester.y()).whileTrue(arm.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     }
 
     /**

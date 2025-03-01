@@ -52,8 +52,8 @@ public class TeleopSwerve extends Command {
         if (povSwitch.getAsBoolean()) fieldRelative = !fieldRelative;
         
         double translationVal = MathUtil.applyDeadband(-drive.getAsDouble(), Constants.OperatorConstants.stickDeadband);
-        double strafeVal = MathUtil.applyDeadband(strafe.getAsDouble(), Constants.OperatorConstants.stickDeadband);
-        double rotationVal = MathUtil.applyDeadband(turn.getAsDouble(), Constants.OperatorConstants.stickDeadband);
+        double strafeVal = MathUtil.applyDeadband(-strafe.getAsDouble(), Constants.OperatorConstants.stickDeadband);
+        double rotationVal = MathUtil.applyDeadband(-turn.getAsDouble(), Constants.OperatorConstants.stickDeadband);
 
         swerve.drive(
             new Pose2d(
