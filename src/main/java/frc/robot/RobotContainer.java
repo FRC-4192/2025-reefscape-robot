@@ -171,8 +171,13 @@ public class RobotContainer {
         // driver.leftBumper().onTrue(new InstantCommand(swerve::))
         operator.a().and(operator.b()).getAsBoolean();
 
-        operator.povDown().onFalse(new InstantCommand(() -> elevator.setTarget(Elevator.State.L1)));
-        operator.povRight().onFalse(new InstantCommand(() -> elevator.setTarget(Elevator.State.L2)));
+        operator.povDown().onTrue(elevator.setTarget(Elevator.State.L1));
+        operator.povRight().onTrue(elevator.setTarget(Elevator.State.L2));
+        operator.povUp().onTrue(elevator.setTarget(Elevator.State.L3));
+
+        operator.a().onTrue(arm.setTarget(Arm.State.INTAKING));
+        operator.b().onTrue(arm.setTarget(Arm.State.HOLDING));
+        operator.x().onTrue(arm.setTarget(Arm.State.SCORING));
     }
 
     private void configureTester() {

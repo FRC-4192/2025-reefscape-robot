@@ -117,6 +117,15 @@ public class Arm extends SubsystemBase {
         return wrist.getSupplyCurrent().getValue();
     }
 
+    public Command setTarget(State state){
+        return runOnce(() -> this.state = state).andThen(runTo()).andThen(stay());        
+    }
+
+    // public void setTarget(State state) {
+    //     this.state = state;
+    //     runTo();
+    // }     
+
     @Override
     public void periodic() {
         // motor.set(ElevatorConstants.pidConroller.calculate(getPosition(), getTarget()) + ElevatorConstants.feedforward.calculate())
@@ -147,7 +156,7 @@ public class Arm extends SubsystemBase {
             () -> controller.reset(getPosition().in(Units.Degrees), getVelocity().in(Units.DegreesPerSecond)),
             () -> wrist.set(
                 controller.calculate(getPosition().in(Units.Degrees), getTarget().in(Units.Degrees))
-                    + ArmConstants.feedforward.calculate(getPosition().in(Units.Radians), controller.getSetpoint().velocity) / RobotController.getBatteryVoltage()
+                    + feedforward(getPosition(), controller.getSetpoint().velocity)
             ),
             (interrupted) -> wrist.set(0),
             controller::atGoal,
@@ -162,6 +171,14 @@ public class Arm extends SubsystemBase {
         wrist.set(power + ArmConstants.feedforward.calculate(getPosition().in(Units.Radians), power) / RobotController.getBatteryVoltage());
     }
 
+    public Command stay() {
+        return run(() -> wrist.set(feedforward(getPosition(), 0)));
+    }
+
+
+    public static double feedforward(Angle podition, double velocity) {
+        return ArmConstants.feedforward.calculate(podition.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
+    }
 
 
     //--------------------------------------------------------------------------

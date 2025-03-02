@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -34,6 +35,7 @@ public class SwerveDrive extends SubsystemBase {
         };
         
         gyro = new AHRS(NavXComType.kMXP_SPI);
+        resetGyro();
 
         // Create the SwerveDriveOdometry given the current angle, the robot is at x=0, r=0, and heading=0
         odometry = new SwerveDriveOdometry(
@@ -71,7 +73,7 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void setPose(Pose2d pose) {
-        odometry.resetPosition(getGyroYaw(), getModulePositions(), pose);
+        odometry.resetPosition(getHeadingGyro(), getModulePositions(), pose);
     }
 
     public Rotation2d getHeading() {
@@ -79,15 +81,15 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void setHeading(Rotation2d heading) {
-        odometry.resetPosition(getGyroYaw(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
+        odometry.resetPosition(getHeadingGyro(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
     }
 
     public void zeroHeading() {
         setHeading(Rotation2d.kZero);
     }
 
-    public Rotation2d getGyroYaw() {
-        return Rotation2d.fromDegrees(gyro.getAngle());
+    public Rotation2d getHeadingGyro() {
+        return Rotation2d.fromDegrees(-gyro.getYaw()); // roll since roborio/navx is mounted vertically
         // return Constants.Swerve.invertGyro ? Rotation2d.fromDegrees(360- gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
     }
 
@@ -152,7 +154,7 @@ public class SwerveDrive extends SubsystemBase {
     
     @Override
     public void periodic() {
-        odometry.update(getGyroYaw(), getModulePositions());
+        odometry.update(getHeadingGyro(), getModulePositions());
 
         for(int i = 0; i < 4; i ++){
             SmartDashboard.putNumber("Mod" + i + " encoder (°)", swerveModules[i].getAbsoluteAngle().getDegrees());
@@ -161,6 +163,10 @@ public class SwerveDrive extends SubsystemBase {
         }
         // SmartDashboard.putNumber("Swerve Rotation Target", rotationTarget);
         // SmartDashboard.putNumber("Swerve Translation Target", translationTarget.getNorm());
+        SmartDashboard.putNumber("Gyro Yaw", getHeadingGyro().getDegrees());
+        SmartDashboard.putNumber("Odo yaw", getHeading().getDegrees());
+        SmartDashboard.putNumber("Odo posX", getPose().getMeasureX().in(Units.Meters));
+        SmartDashboard.putNumber("Odo posY", getPose().getMeasureY().in(Units.Meters));
     }
     
 }

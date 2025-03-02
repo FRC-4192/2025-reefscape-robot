@@ -23,11 +23,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import static frc.robot.Constants.ElevatorConstants;
 
+import java.util.function.DoubleSupplier;
+
 public class Elevator extends SubsystemBase {
     private final SparkFlex motor, motor2;
 
     private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2, 5);
-    private ProfiledPIDController controller = new ProfiledPIDController(1.5, 0, 0.0001, constraints);
+    private ProfiledPIDController controller = new ProfiledPIDController(2.5, 0, 0.0001, constraints);
     private PIDController basicController = new PIDController(0.1, 0, 0);
 
     // private double target;
@@ -35,9 +37,9 @@ public class Elevator extends SubsystemBase {
 
     public enum State {
         L0(0),
-        L1(0.1),
+        L1(0.02),
         L2(0.6),
-        L3(-1),
+        L3(0.75),
         L4(-1);
 
         private final Distance position; // units = motor rotations
@@ -78,7 +80,7 @@ public class Elevator extends SubsystemBase {
         motor2.configure(config.follow(motor, true), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         // motor2.configure(config.inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        controller.setTolerance(0.02);
+        controller.setTolerance(0.005);
         basicController.setTolerance(0.02);
 
         routine = new SysIdRoutine(
@@ -97,6 +99,8 @@ public class Elevator extends SubsystemBase {
                 this
             )
         );
+
+        setDefaultCommand(stay());
     }
 
     private void motorSetup() {
@@ -152,10 +156,9 @@ public class Elevator extends SubsystemBase {
         return Units.Amps.of(motor.getOutputCurrent() + motor2.getOutputCurrent());
     }
 
-    public void setTarget(State state) {
-        this.state = state;
+    public Command setTarget(State state) {
         // basicController.setSetpoint(state.meters());
-        setDefaultCommand(runTo());
+        return runOnce(() -> this.state = state).andThen(runTo()).andThen(stay());
     }
 
     @Override
@@ -166,8 +169,10 @@ public class Elevator extends SubsystemBase {
         // SmartDashboard.putNumber("Elevator 15", motor2.getEncoder().getPosition());
         SmartDashboard.putNumber("Elevator Current (A)", getCurrent().in(Units.Amps));
         SmartDashboard.putNumber("Elevator Power", motor.get());
-        SmartDashboard.putNumber("Elevator Set Pos", controller.getSetpoint().position);
-        SmartDashboard.putNumber("Elevator Set Velo", controller.getSetpoint().velocity);
+        // SmartDashboard.putNumber("Elevator Set Pos", controller.getSetpoint().position);
+        // SmartDashboard.putNumber("Elevator Set Velo", controller.getSetpoint().velocity);
+        SmartDashboard.putNumberArray("Elevator Pos", new double[] { controller.getSetpoint().position, getPosition().in(Units.Meters) });
+        SmartDashboard.putNumberArray("Elevator Vel", new double[] { controller.getSetpoint().velocity, getVelocity().in(Units.MetersPerSecond) });
     }
 
     /**
@@ -187,7 +192,7 @@ public class Elevator extends SubsystemBase {
             () -> controller.reset(getPosition().in(Units.Meters), getVelocity().in(Units.MetersPerSecond)),
             () -> motor.set(
                 controller.calculate(getPosition().in(Units.Meters), getTarget().meters())
-                    + ElevatorConstants.feedforward.calculate(controller.getSetpoint().velocity) / RobotController.getBatteryVoltage()
+                    + feedforward(controller.getSetpoint().velocity)
             ),
             (interrupted) -> motor.set(interrupted ? 0 : ElevatorConstants.feedforward.calculate(0)),
             controller::atGoal,
@@ -201,12 +206,27 @@ public class Elevator extends SubsystemBase {
 
     public void runBasic() {
         motor.set((basicController.atSetpoint() ? 0 : basicController.calculate(getPosition().in(Units.Meters), getTarget().meters()))
-             + ElevatorConstants.feedforward.calculate(getTarget().meters() - getPosition().in(Units.Meters)) / RobotController.getBatteryVoltage());
+             + feedforward(getTarget().meters() - getPosition().in(Units.Meters))
+        );
+    }
+
+    public Command runRaw(DoubleSupplier power) {
+        return run(() -> motor.set(power.getAsDouble()));
+    }
+
+    // public Command runBasic(DoubleSupplier )
+
+    public Command stay() {
+        return run(() -> motor.set(feedforward(0)));
     }
 
 
     public static Distance motorToHeight(double rotations) {
         return Units.Inches.of(rotations * 2 * Math.PI / 5 * .8755);
+    }
+
+    public static double feedforward(double velocity) {
+        return ElevatorConstants.feedforward.calculate(velocity) / RobotController.getBatteryVoltage();
     }
 
 
