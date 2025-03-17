@@ -16,6 +16,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -27,6 +28,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.COTSTalonFXSwerveConstants;
@@ -48,29 +50,49 @@ public final class Constants {
     public static final class DriverConstants {
         public static final int controllerPort = 0;
         public static final double stickDeadband = .01;
-        public static final double swerveMaxSpeed = 0.5;
-        public static final double swerveSlowSpeed = 0.2;
+        public static final double swerveMaxSpeed = 0.75;
+        public static final double swerveSlowSpeed = 0.25;
     }
 
-    public static final class ElevatorConstants {
-        public static final int[] motorIDs = new int[] {-1, -1};
+    public static final class LimelightConstants {
+        public static final String name = "limelight";
+        
+    }
 
-        public static final PIDController pidConroller = new PIDController(0, 0, 0);
-        public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12, 0.25, 0, 0);
+    // public static final class ElevatorConstants {
+    //     public static final int[] motorIDs = new int[] {-1, -1};
+
+    //     public static final PIDController pidConroller = new PIDController(0, 0, 0);
+    //     public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12, 0.25, 0, 0);
+    // }
+    public static final class ElevatorConstants {
+        public static final TalonFXConfiguration elevatorConfig = new TalonFXConfiguration()
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withSupplyCurrentLimit(35)
+                .withStatorCurrentLimit(30))
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast));
+        // public static final TalonFXConfiguration elevatorConfig2 = elevatorConfig.withMotorOutput(
+        //     elevatorConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive)
+        // );
+        
+        public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12,0.33,0, 0);
+        
     }
 
     public static final class ArmConstants {
         public static final TalonFXConfiguration wristConfig = new TalonFXConfiguration()
             .withCurrentLimits(new CurrentLimitsConfigs()
-                .withSupplyCurrentLimit(25)
-                .withStatorCurrentLimit(25))
+                .withSupplyCurrentLimit(30)
+                .withStatorCurrentLimit(30))
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Brake));
+                .withNeutralMode(NeutralModeValue.Coast));
 
-        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
+        public static Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
         
-        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.2, 0, 0);
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.05, 0, 0);
     }
 
     public static final class SwerveConstants {
@@ -94,16 +116,30 @@ public final class Constants {
             new Translation2d(-wheelBase / 2.0, -trackWidth / 2.0)
         );
         
-        public static RobotConfig autoPathFollowerConfig;// = RobotConfig.fromGUISettings();
-        //     new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-        //     new PIDConstants(2.0, 0.0, 0.0), // Rotation PID constants
-        //     4.5,//Constants.Swerve.maxSpeed, // Max module speed, in m/s
-        //     0.4,//new Translation2d(Constants.Swerve.trackWidth, Constants.Swerve.wheelBase).getNorm() / 2, // Drive base radius in meters. Distance from robot center to furthest module.
-        //     new ReplanningConfig() // Default path replanning config. See the API for the options here
-        // );
+        public static final RobotConfig autoPathFollowerConfig = new RobotConfig(// = RobotConfig.fromGUISettings();
+            51.26,
+            6.3,
+            new ModuleConfig(
+                Units.inchesToMeters(2.5),
+                5.45,
+                1.2,
+                // new DCMotor(
+                //     12.,
+                //     4.69 * swerveType.driveGearRatio,
+                //     257,
+                //     1.5,
+                //     668.112038 / swerveType.driveGearRatio,
+                //     1
+                // ),
+                DCMotor.getFalcon500(1).withReduction(swerveType.driveGearRatio),
+                60,//swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimit,
+                1
+            ),
+            kinematics.getModules() // Default path replanning config. See the API for the options here
+        );
         public static final PPHolonomicDriveController autoFollowerController = new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            new PIDConstants(5, 0.0, 0.0), // Translation PID constants
+            new PIDConstants(5, 0.0, 0.0) // Rotation PID constants
         );
 
         /* Swerve Profiling Values */
@@ -140,34 +176,34 @@ public final class Constants {
         
         static {
             // pathplanner config
-            try {
-                autoPathFollowerConfig = RobotConfig.fromGUISettings();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                // autoPathFollowerConfig = new RobotConfig(
-                //     -1,
-                //     -1,
-                //     null,
-                //     null
-                // );
-            } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                // autoPathFollowerConfig = new RobotConfig(
-                //     -1,
-                //     -1,
-                //     null,
-                //     null
-                // );
-            } finally {
-                // autoPathFollowerConfig = new RobotConfig(
-                //     -1,
-                //     -1,
-                //     null,
-                //     null
-                // );
-            }
+            // try {
+            //     autoPathFollowerConfig = RobotConfig.fromGUISettings();
+            // } catch (IOException e) {
+            //     // TODO Auto-generated catch block
+            //     e.printStackTrace();
+            //     // autoPathFollowerConfig = new RobotConfig(
+            //     //     -1,
+            //     //     -1,
+            //     //     null,
+            //     //     null
+            //     // );
+            // } catch (ParseException e) {
+            //     // TODO Auto-generated catch block
+            //     e.printStackTrace();
+            //     // autoPathFollowerConfig = new RobotConfig(
+            //     //     -1,
+            //     //     -1,
+            //     //     null,
+            //     //     null
+            //     // );
+            // } finally {
+            //     // autoPathFollowerConfig = new RobotConfig(
+            //     //     -1,
+            //     //     -1,
+            //     //     null,
+            //     //     null
+            //     // );
+            // }
 
 
             /** Swerve CANCoder Configuration */
@@ -208,7 +244,7 @@ public final class Constants {
             swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
             /* PID Config */
-            swerveDriveFXConfig.Slot0.kP = swerveType.angleKP;
+            swerveDriveFXConfig.Slot0.kP = 2.5;
             swerveDriveFXConfig.Slot0.kI = swerveType.angleKI;
             swerveDriveFXConfig.Slot0.kD = swerveType.angleKD;
 

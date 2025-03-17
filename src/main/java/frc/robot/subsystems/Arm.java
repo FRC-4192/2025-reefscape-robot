@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -25,23 +26,26 @@ import frc.robot.Constants.ArmConstants;
 
 public class Arm extends SubsystemBase {
     private TalonFX wrist;
-    private SparkFlex take;
+    // private SparkFlex take;
 
-    private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(0, 0);
-    private ProfiledPIDController controller = new ProfiledPIDController(0, 0, 0, constraints);
+    private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(11, 14);
+    private ProfiledPIDController controller = new ProfiledPIDController(0.8, 0, 0, constraints);
 
     public static final double WRIST_RATIO = 1./16/4.5;
 
     private State state = State.HOLDING;
+    private double adjust = 0.0;
+
+    private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        INTAKING(-80),
+        INTAKING(-75),
         HOLDING(105),
         SCORING(90 - 32.211),
         EJECTING(-80), // L1 scoring or throwing away unwanted coral
         ALGAE(-55);
 
-        private Angle angle;
+        private final Angle angle;
 
         private State(Angle angle) {
             this.angle = angle;
@@ -57,23 +61,25 @@ public class Arm extends SubsystemBase {
     
     public Arm() {
         wrist = new TalonFX(9);
-        take = new SparkFlex(16, MotorType.kBrushless);
+        // take = new SparkFlex(16, MotorType.kBrushless);
         
         // wrist.setNeutralMode(NeutralModeValue.Brake);
         wrist.getConfigurator().apply(ArmConstants.wristConfig);
 
-        SparkFlexConfig config = new SparkFlexConfig();
-        config
-            .idleMode(IdleMode.kCoast)
-            .inverted(false)
-            .smartCurrentLimit(30, 25);
-        // config.softLimit
-        //     .forwardSoftLimitEnabled(false)
-        //     .reverseSoftLimitEnabled(false)
-        //     .forwardSoftLimit(0)
-        //     .reverseSoftLimit(0);
-        // config.closedLoop.pidf(target, target, target, target)
-        take.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        // SparkFlexConfig config = new SparkFlexConfig();
+        // config
+        //     .idleMode(IdleMode.kCoast)
+        //     .inverted(false)
+        //     .smartCurrentLimit(40, 35);
+        // // config.softLimit
+        // //     .forwardSoftLimitEnabled(false)
+        // //     .reverseSoftLimitEnabled(false)
+        // //     .forwardSoftLimit(0)
+        // //     .reverseSoftLimit(0);
+        // // config.closedLoop.pidf(target, target, target, target)
+        // take.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+        controller.setTolerance(.01);
 
         wristRoutine = new SysIdRoutine(
             new SysIdRoutine.Config(),
@@ -94,18 +100,34 @@ public class Arm extends SubsystemBase {
         );
     }
 
+    public State getState() {
+        return state;
+    }
     public Angle getTarget() {
         return state.angle;
     }
 
+    public boolean isSafeToLift() {
+        return getState() == State.HOLDING;
+    }
+    // public boolean isSafeToDrop() {
+    //     return getState() == State.INTAKING && getState() != State.EJECTING;
+    // }
+
     // public double getAngle() {
     //     return wrist.getPosition().getValueAsDouble();
     // }
-    // public double getVelocity() {
+    // public double getVelocity() { 
     //     return wrist.getVelocity().getValueAsDouble();
     // }
     public Angle getPosition() {
-        return wrist.getPosition().getValue().times(WRIST_RATIO).plus(ArmConstants.START_HORIZONTAL_OFFSET);
+        return wrist.getPosition().getValue().times(WRIST_RATIO).plus(ArmConstants.START_HORIZONTAL_OFFSET).plus(offsetOffset);
+    }
+    public double getError(){
+        return getTarget().in(Units.Degrees)-getPosition().in(Units.Degrees);
+    }
+    public double getError(double target){
+        return target-getPosition().in(Units.Degrees);
     }
     public AngularVelocity getVelocity() {
         return wrist.getVelocity().getValue().times(WRIST_RATIO);
@@ -114,12 +136,32 @@ public class Arm extends SubsystemBase {
         return wrist.getAcceleration().getValue().times(WRIST_RATIO);
     }
     public Current getWristCurrent() {
-        return wrist.getSupplyCurrent().getValue();
+        return wrist.getTorqueCurrent().getValue();
     }
 
-    public Command setTarget(State state){
+    public Command setTarget(State state) {
+        adjust = 0;
         return runOnce(() -> this.state = state).andThen(runTo()).andThen(stay());        
     }
+    public Command setTarget2(State state) {
+        adjust = 0;
+        return runOnce(() -> this.state = state).andThen(runTo());        
+    }
+    public void setState(State state) {
+        this.state = state;        
+    }
+    public Command adjust(double radiansPerSecond) {
+        adjust += radiansPerSecond * .02;
+        return adjustRun();
+    }
+    
+    public Command rezero() {
+        return runEnd(() -> wrist.set(.2), stay()::execute).finallyDo(() -> offsetOffset = offsetOffset.plus(ArmConstants.START_HORIZONTAL_OFFSET.minus(getPosition())));
+    }
+
+    // public Command setRawTake(double power){
+    //     return runOnce(() -> runTakeRaw(power));
+    // }
 
     // public void setTarget(State state) {
     //     this.state = state;
@@ -137,7 +179,10 @@ public class Arm extends SubsystemBase {
         SmartDashboard.putNumber("Wrist Position", getPosition().in(Units.Degree));
         SmartDashboard.putNumber("Wrist Velo", getVelocity().in(Units.DegreesPerSecond));
         SmartDashboard.putNumber("Wrist Accel", getAcceleration().in(Units.DegreesPerSecondPerSecond));
-    }
+        // SmartDashboard.putNumber("Take Current", take.getOutputCurrent());
+
+        SmartDashboard.putNumberArray("Wrist Pos(array)", new double[] { Math.toDegrees(controller.getSetpoint().position), getPosition().in(Units.Degrees) });
+        SmartDashboard.putNumberArray("Wrist Vel(array)", new double[] { Math.toDegrees(controller.getSetpoint().velocity), getVelocity().in(Units.DegreesPerSecond) });    }
 
     /**
     * Returns a command that runs the elevator to the target using motion profiled PID.
@@ -153,20 +198,33 @@ public class Arm extends SubsystemBase {
         // .finallyDo(() -> motor.set(0));
 
         return new FunctionalCommand(
-            () -> controller.reset(getPosition().in(Units.Degrees), getVelocity().in(Units.DegreesPerSecond)),
+            () -> controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)),
             () -> wrist.set(
-                controller.calculate(getPosition().in(Units.Degrees), getTarget().in(Units.Degrees))
+                controller.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians) + adjust)
                     + feedforward(getPosition(), controller.getSetpoint().velocity)
             ),
-            (interrupted) -> wrist.set(0),
+            (interrupted) -> wrist.set(interrupted ? 0 : feedforward(getPosition(), 0)),
             controller::atGoal,
             this
         );
     }
 
-    public void runTakeRaw(double power) {
-        take.set(power);
+    private Command adjustRun() {
+        return new FunctionalCommand(
+            () -> controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)),
+            () -> wrist.set(
+                controller.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians) + adjust)
+                    + feedforward(getPosition(), controller.getSetpoint().velocity)
+            ),
+            (interrupted) -> wrist.set(feedforward(getPosition(), 0)),
+            controller::atGoal,
+            this
+        );
     }
+
+    // public void runTakeRaw(double power) {
+    //     take.set(power);
+    // }
     public void runWristRaw(double power) {
         wrist.set(power + ArmConstants.feedforward.calculate(getPosition().in(Units.Radians), power) / RobotController.getBatteryVoltage());
     }
@@ -176,8 +234,8 @@ public class Arm extends SubsystemBase {
     }
 
 
-    public static double feedforward(Angle podition, double velocity) {
-        return ArmConstants.feedforward.calculate(podition.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
+    public static double feedforward(Angle position, double velocity) {
+        return ArmConstants.feedforward.calculate(position.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
     }
 
 

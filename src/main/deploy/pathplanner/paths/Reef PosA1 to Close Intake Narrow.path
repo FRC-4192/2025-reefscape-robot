@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.746166918429003,
+        "y": 4.154239048338368
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.3406722054430364,
+        "y": 3.016087613289738
+      },
+      "isLocked": false,
+      "linkedName": "Deposit Pos1"
+    },
+    {
+      "anchor": {
+        "x": 1.4580815709969785,
+        "y": 1.1452888972809672
+      },
+      "prevControl": {
+        "x": 5.103285498494397,
+        "y": 2.4509346676704036
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Intake Coral Close"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -125.00000000000001
+  },
+  "reversed": false,
+  "folder": "PosA1 to Intake",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

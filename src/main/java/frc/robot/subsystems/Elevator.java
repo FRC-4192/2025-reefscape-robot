@@ -1,12 +1,7 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -20,13 +15,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
 import static frc.robot.Constants.ElevatorConstants;
 
 import java.util.function.DoubleSupplier;
 
 public class Elevator extends SubsystemBase {
-    private final SparkFlex motor, motor2;
+    private final TalonFX motor, motor2;
 
     private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2, 5);
     private ProfiledPIDController controller = new ProfiledPIDController(2.5, 0, 0.0001, constraints);
@@ -38,9 +32,9 @@ public class Elevator extends SubsystemBase {
     public enum State {
         L0(0),
         L1(0.02),
-        L2(0.6),
-        L3(0.75),
-        L4(-1);
+        L2(0.5),
+        L3(0.22),
+        L4(0.75);
 
         private final Distance position; // units = motor rotations
 
@@ -63,35 +57,57 @@ public class Elevator extends SubsystemBase {
     }
 
     public Elevator() {
-        motor = new SparkFlex(14, MotorType.kBrushless);
-        motor2 = new SparkFlex(15, MotorType.kBrushless);
-        SparkFlexConfig config = new SparkFlexConfig();
-        config
-            .idleMode(IdleMode.kCoast)
-            .inverted(true)
-            .smartCurrentLimit(30, 25);
+        motor = new TalonFX(14);
+        motor2 = new TalonFX(15);
+        // SparkFlexConfig config = new SparkFlexConfig();
+        // config
+        //     .idleMode(IdleMode.kCoast)
+        //     .inverted(true)
+        //     .smartCurrentLimit(30, 25);
         // config.softLimit
         //     .forwardSoftLimitEnabled(false)
         //     .reverseSoftLimitEnabled(false)
         //     .forwardSoftLimit(0)
         //     .reverseSoftLimit(0);
         // config.closedLoop.pidf(target, target, target, target)
-        motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        motor2.configure(config.follow(motor, true), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        // motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // motor2.configure(config.follow(motor, true), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        motor.getConfigurator().apply(ElevatorConstants.elevatorConfig);
+        motor2.getConfigurator().apply(ElevatorConstants.elevatorConfig);
+        motor2.setControl(new Follower(motor.getDeviceID(), true));
         // motor2.configure(config.inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
         controller.setTolerance(0.005);
         basicController.setTolerance(0.02);
 
+        // routine = new SysIdRoutine(
+        //     new SysIdRoutine.Config(),
+        //     new SysIdRoutine.Mechanism(
+        //         voltage -> {
+        //             motor.setVoltage(voltage.in(Units.Volts));
+        //         },
+        //         log -> {
+        //             log.motor("elevator")
+        //                 .voltage(Units.Volts.of(motor.getBusVoltage()))
+        //                 .linearPosition(getPosition())
+        //                 .linearVelocity(getVelocity())
+        //                 .current(getCurrent());
+        //         },
+        //         this
+        //     )
+        // );
+
         routine = new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
                 voltage -> {
-                    motor.setVoltage(voltage);
+                    motor.setVoltage(voltage.in(Units.Volts));
                 },
                 log -> {
-                    log.motor("elevator")
-                        .voltage(Units.Volts.of(motor.getBusVoltage()))
+                    log.motor("wrist")
+                        .voltage(motor.getMotorVoltage().getValue())
                         .linearPosition(getPosition())
                         .linearVelocity(getVelocity())
                         .current(getCurrent());
@@ -145,20 +161,34 @@ public class Elevator extends SubsystemBase {
     // public double getVelocity() {
     //     return 0;
     // }
+    public double getError(){
+        return getTarget().meters()-getPosition().in(Units.Meters);
+    }
+    public double getError(double target){
+        return target-getPosition().in(Units.Meters);
+    }
     public Distance getPosition() {
-        return motorToHeight((motor.getEncoder().getPosition() + motor2.getEncoder().getPosition()) * .5);
+        return motorToHeight((motor.getPosition().getValueAsDouble() + motor2.getPosition().getValueAsDouble()) * .5);
     }
     public LinearVelocity getVelocity() {
-        return motorToHeight((motor.getEncoder().getVelocity() + motor2.getEncoder().getVelocity()) * .5).div(Units.Minute.one());
+        return motorToHeight((motor.getVelocity().getValueAsDouble() + motor2.getVelocity().getValueAsDouble()) * .5).div(Units.Second.one());
     }
 
     public Current getCurrent() {
-        return Units.Amps.of(motor.getOutputCurrent() + motor2.getOutputCurrent());
+        return Units.Amps.of(motor.getStatorCurrent().getValueAsDouble() + motor2.getStatorCurrent().getValueAsDouble());
     }
 
     public Command setTarget(State state) {
         // basicController.setSetpoint(state.meters());
         return runOnce(() -> this.state = state).andThen(runTo()).andThen(stay());
+    }
+    public Command setTarget2(State state) {
+        // basicController.setSetpoint(state.meters());
+        return runOnce(() -> this.state = state).andThen(runTo());
+    }
+
+    public boolean safeToIntake() {
+        return getTarget() == State.L0;
     }
 
     @Override
@@ -213,16 +243,19 @@ public class Elevator extends SubsystemBase {
     public Command runRaw(DoubleSupplier power) {
         return run(() -> motor.set(power.getAsDouble()));
     }
+    public Command runRawg(DoubleSupplier power) {
+        return run(() -> motor.set(power.getAsDouble() + feedforward(power.getAsDouble())));
+    }
 
     // public Command runBasic(DoubleSupplier )
 
     public Command stay() {
-        return run(() -> motor.set(feedforward(0)));
+        return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : feedforward(0)));
     }
 
 
     public static Distance motorToHeight(double rotations) {
-        return Units.Inches.of(rotations * 2 * Math.PI / 5 * .8755);
+        return Units.Inches.of(rotations * 2. * Math.PI / 3. * .8755);
     }
 
     public static double feedforward(double velocity) {

@@ -8,10 +8,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.LimelightHelpers;
 import frc.robot.Constants;
+import frc.robot.Constants.LimelightConstants;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
@@ -24,6 +29,8 @@ public class SwerveDrive extends SubsystemBase {
     SwerveDriveOdometry   odometry;
     AHRS                  gyro; // Psuedo-class representing a gyroscope.
     SwerveModule[]        swerveModules; // Psuedo-class representing swerve modules.
+
+    SwerveDrivePoseEstimator poseEstimator; // to replace odo bc better
     
     // Constructor
     public SwerveDrive() {
@@ -45,47 +52,68 @@ public class SwerveDrive extends SubsystemBase {
             // Front-Left, Front-Right, Back-Left, Back-Right
             Pose2d.kZero // x=0, y=0, heading=0
         );
+        poseEstimator = new SwerveDrivePoseEstimator(
+            SwerveConstants.kinematics,
+            getHeadingGyro(),
+            getModulePositions(),
+            Pose2d.kZero
+        );
 
-        // AutoBuilder.configure(
-        //     this::getPose,
-        //     this::setPose,
-        //     this::getCurrentVelocity,
-        //     (speeds, feedforwards) -> drive(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-        //     SwerveConstants.autoFollowerController,
-        //     SwerveConstants.autoPathFollowerConfig,
-        //     () -> {
-        //         // Boolean supplier that controls when the path will be mirrored for the red alliance
-        //         // This will flip the path being followed to the red side of the field.
-        //         // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+        AutoBuilder.configure(
+            this::getPose,
+            this::setPose,
+            this::getCurrentVelocity,
+            (speeds) -> driveAuto(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            SwerveConstants.autoFollowerController,
+            SwerveConstants.autoPathFollowerConfig,
+            () -> {
+                // Boolean supplier that controls when the path will be mirrored for the red alliance
+                // This will flip the path being followed to the red side of the field.
+                // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
-        //         var alliance = DriverStation.getAlliance();
-        //         if (alliance.isPresent()) {
-        //             return alliance.get() == DriverStation.Alliance.Red;
-        //         }
-        //         return false;
-        //     },
-        //     this
-        // );
+                var alliance = DriverStation.getAlliance();
+                if (alliance.isPresent()) {
+                    return alliance.get() == DriverStation.Alliance.Red;
+                }
+                return false;
+            },
+            this
+        );
     }
 
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
+    public Pose2d getPoseV() {
+        return poseEstimator.getEstimatedPosition();
+    }
 
     public void setPose(Pose2d pose) {
         odometry.resetPosition(getHeadingGyro(), getModulePositions(), pose);
+    }
+    public void setPoseV(Pose2d pose) {
+        poseEstimator.resetPosition(getHeadingGyro(), getModulePositions(), pose);
     }
 
     public Rotation2d getHeading() {
         return getPose().getRotation();
     }
+    public Rotation2d getHeadingV() {
+        return getPoseV().getRotation();
+    }
 
     public void setHeading(Rotation2d heading) {
         odometry.resetPosition(getHeadingGyro(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
     }
+    public void setHeadingV(Rotation2d heading) {
+        setPoseV(new Pose2d(getPoseV().getTranslation(), heading));
+    }
 
     public void zeroHeading() {
         setHeading(Rotation2d.kZero);
+    }
+    public void zeroHeadingV() {
+        setHeadingV(Rotation2d.kZero);
     }
 
     public Rotation2d getHeadingGyro() {
@@ -99,7 +127,7 @@ public class SwerveDrive extends SubsystemBase {
     //     }
     // }
 
-    public void resetGyro(){
+    public void resetGyro() {
         gyro.zeroYaw();
         gyro.resetDisplacement();
         gyro.reset();
@@ -112,7 +140,7 @@ public class SwerveDrive extends SubsystemBase {
 
     // Fetch the current swerve module positions.
     public SwerveModulePosition[] getModulePositions() {
-        return new SwerveModulePosition[]{
+        return new SwerveModulePosition[] {
             swerveModules[0].getPosition(),
             swerveModules[1].getPosition(),
             swerveModules[2].getPosition(),
@@ -129,7 +157,16 @@ public class SwerveDrive extends SubsystemBase {
         };
     }
 
+    private int k = 0;
+    public void driveAuto(ChassisSpeeds chassisSpeeds) {
+        SwerveModuleState[] swerveModuleStates = SwerveConstants.kinematics.toSwerveModuleStates(chassisSpeeds);
+        SmartDashboard.putNumber("aut", ++k);
+        SmartDashboard.putString("aut cs", chassisSpeeds.toString());
 
+        for(int i = 0; i < 4; i ++){
+            swerveModules[i].setState(swerveModuleStates[i], false);
+        }
+    }
     public void drive(ChassisSpeeds chassisSpeeds) {
         drive(chassisSpeeds, true);
     }
@@ -155,6 +192,8 @@ public class SwerveDrive extends SubsystemBase {
     @Override
     public void periodic() {
         odometry.update(getHeadingGyro(), getModulePositions());
+        poseEstimator.update(getHeadingGyro(), getModulePositions());
+        updateVisionOdo();
 
         for(int i = 0; i < 4; i ++){
             SmartDashboard.putNumber("Mod" + i + " encoder (°)", swerveModules[i].getAbsoluteAngle().getDegrees());
@@ -167,6 +206,33 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("Odo yaw", getHeading().getDegrees());
         SmartDashboard.putNumber("Odo posX", getPose().getMeasureX().in(Units.Meters));
         SmartDashboard.putNumber("Odo posY", getPose().getMeasureY().in(Units.Meters));
+        
+        SmartDashboard.putNumber("OdoV yaw", getHeadingV().getDegrees());
+        SmartDashboard.putNumber("OdoV posX", getPoseV().getMeasureX().in(Units.Meters));
+        SmartDashboard.putNumber("OdoV posY", getPoseV().getMeasureY().in(Units.Meters));
     }
     
+
+    public void updateVisionOdo() {
+        LimelightHelpers.SetRobotOrientation(
+            LimelightConstants.name,
+            getHeadingV().getDegrees(),
+            0,
+            0,
+            0,
+            0,
+            0
+        );
+        // LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightConstants.name);
+        LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LimelightConstants.name);
+
+        if (Math.abs(gyro.getRate()) > 360 || vis.tagCount < 1)
+            return;
+        
+        poseEstimator.addVisionMeasurement(
+            vis.pose,
+            vis.timestampSeconds,
+            VecBuilder.fill(.7, .7, 9999999)
+        );
+    }
 }

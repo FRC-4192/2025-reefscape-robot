@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.0,
+        "y": 5.0
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.072491546890169,
+        "y": 4.488773135334055
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.746166918429003,
+        "y": 4.154239048338368
+      },
+      "prevControl": {
+        "x": 6.879656044816504,
+        "y": 4.774287391280174
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Deposit Pos1"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Score Preload",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.46591656486010746
+  },
+  "useDefaultConstraints": true
+}

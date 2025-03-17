@@ -11,6 +11,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import static frc.robot.Constants.SwerveConstants;
 
 
@@ -51,8 +53,8 @@ public class SwerveModule {
     /**
     Get the distance in meters.
     */
-    public double getDistance() {
-        return driveMotor.getPosition().getValueAsDouble() * SwerveConstants.wheelCircumference;
+    public Distance getDistance() {
+        return Units.Meters.of(SwerveConstants.wheelCircumference).times(driveMotor.getPosition().getValueAsDouble());
     }
     
     /**
@@ -71,7 +73,7 @@ public class SwerveModule {
     }
 
     public LinearVelocity getVelocity() {
-        return driveMotor.getVelocity().getValue().asFrequency().times(Distance.ofBaseUnits(SwerveConstants.wheelCircumference, Units.Meter));
+        return Units.MetersPerSecond.of(SwerveConstants.wheelCircumference).times(driveMotor.getVelocity().getValueAsDouble());
     }    
 
     public SwerveModuleState getState() {
@@ -97,6 +99,8 @@ public class SwerveModule {
                              .withFeedForward(SwerveConstants.driveFeedForward.calculate(state.speedMetersPerSecond))
             );
         }
+
+        SmartDashboard.putNumber("driv mot" + driveMotor.getDeviceID(), driveMotor.get());
     }
 
 }

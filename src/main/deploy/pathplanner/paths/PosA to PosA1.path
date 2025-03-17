@@ -1,0 +1,72 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 5.905230362537765,
+        "y": 4.028313821752266
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.713525585801358,
+        "y": 4.188779639222669
+      },
+      "isLocked": false,
+      "linkedName": "Algae Off PosA"
+    },
+    {
+      "anchor": {
+        "x": 5.746166918429003,
+        "y": 4.154239048338368
+      },
+      "prevControl": {
+        "x": 5.9476847470418335,
+        "y": 3.9892337605059494
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Deposit Pos1"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 180.0,
+    "maxAngularAcceleration": 360.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Score Preload",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

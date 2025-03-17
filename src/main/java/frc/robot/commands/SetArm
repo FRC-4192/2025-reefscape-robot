@@ -11,12 +11,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Constants.DriverConstants;
-import frc.robot.subsystems.Glitter;
 import frc.robot.subsystems.SwerveDrive;
 
-public class TeleopSwerve extends Command {
+// this is some rANDOM SHIT RISHI IS DOING
+
+public class SetArm extends Command {
     private SwerveDrive swerve;
-    private Glitter glitter;
     private DoubleSupplier drive;
     private DoubleSupplier strafe;
     private DoubleSupplier turn;
@@ -25,15 +25,14 @@ public class TeleopSwerve extends Command {
 
     private boolean fieldRelative = false;
 
-    public TeleopSwerve(SwerveDrive swerve, Glitter glitter, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn) {
-        this(swerve, glitter, drive, strafe, turn, () -> false, () -> false);
+    public TeleopSwerve(SwerveDrive swerve, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn) {
+        this(swerve, drive, strafe, turn, () -> false, () -> false);
     }
             
-    public TeleopSwerve(SwerveDrive swerve, Glitter glitter, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn,
+    public TeleopSwerve(SwerveDrive swerve, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn,
                         BooleanSupplier povSwitch, BooleanSupplier slow) {
         super();
         this.swerve = swerve;
-        this.glitter = glitter;
         this.drive = drive;
         this.strafe = strafe;
         this.turn = turn;
@@ -53,13 +52,10 @@ public class TeleopSwerve extends Command {
 
     @Override
     public void execute() {
-        if (povSwitch.getAsBoolean()) {
-            fieldRelative = !fieldRelative;
-            glitter.setPWMRaw(fieldRelative ? 1905 : 1785);
-        }
+        if (povSwitch.getAsBoolean()) fieldRelative = !fieldRelative;
         
-        double translationVal = MathUtil.applyDeadband(drive.getAsDouble(), Constants.OperatorConstants.stickDeadband);
-        double strafeVal = MathUtil.applyDeadband(strafe.getAsDouble(), Constants.OperatorConstants.stickDeadband);
+        double translationVal = MathUtil.applyDeadband(-drive.getAsDouble(), Constants.OperatorConstants.stickDeadband);
+        double strafeVal = MathUtil.applyDeadband(-strafe.getAsDouble(), Constants.OperatorConstants.stickDeadband);
         double rotationVal = MathUtil.applyDeadband(-turn.getAsDouble(), Constants.OperatorConstants.stickDeadband);
 
         swerve.drive(
