@@ -62,6 +62,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 public class RobotContainer {
     /* Controllers */
     private final XboxController driver = new XboxController(DriverConstants.controllerPort);
+    private final CommandXboxController driverC = new CommandXboxController(DriverConstants.controllerPort);
     private final XboxController op = new XboxController(OperatorConstants.controllerPort);
     private final CommandXboxController operator = new CommandXboxController(OperatorConstants.controllerPort);
     private final CommandXboxController tester = new CommandXboxController(2);
@@ -87,8 +88,8 @@ public class RobotContainer {
             driver::getLeftY,
             driver::getLeftX,
             driver::getRightX,
-            driver::getLeftBumperButtonReleased,
-            () -> driver.getRightBumperButton() || driver.getLeftStickButton() || driver.getRightStickButton() || elevator.getTarget() != Elevator.State.L0
+            driver::getStartButtonPressed,
+            () -> driver.getLeftStickButton() || driver.getRightStickButton() || elevator.getTarget() != Elevator.State.L0
         ));
 
         // swerve.setDefaultCommand(new TeleopSwerve(
@@ -127,8 +128,8 @@ public class RobotContainer {
         //     () -> false,
         //     arm
         // ));
-        take.setDefaultCommand(take.runTake(() -> operator.getRightTriggerAxis() - operator.getLeftTriggerAxis()));
-        rampTake.setDefaultCommand(rampTake.runTake(() -> operator.getRightTriggerAxis() - operator.getLeftTriggerAxis()));
+        take.setDefaultCommand(take.runTake(() -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
+        rampTake.setDefaultCommand(rampTake.runTake(() -> .5 * (operator.getRightTriggerAxis() - operator.getLeftTriggerAxis())));
 
         // Configure the trigger bindings
         configureBindings();
@@ -144,24 +145,27 @@ public class RobotContainer {
         //     ? stream.filter(auto -> auto.getName().startsWith("comp"))
         //     : stream
         // );
-        NamedCommands.registerCommand("arm hold", false ? arm.setTarget(Arm.State.HOLDING) : new InstantCommand());
-        NamedCommands.registerCommand("arm intake", false ? arm.setTarget(Arm.State.INTAKING) : new InstantCommand());
-        NamedCommands.registerCommand("elevator L4", true ? elevator.setTarget2(Elevator.State.L4) : new InstantCommand());
-        NamedCommands.registerCommand("score", true ? new SequentialCommandGroup(
-            // arm.setTarget(Arm.State.SCORING).raceWith(new WaitCommand(1)),
-            // take.runOuttake(()-> 1).raceWith(new WaitCommand(1.5)),
-            // take.runOuttake(()-> 0).raceWith(new WaitCommand(.3)),
-            // arm.setTarget(Arm.State.HOLDING).raceWith(new WaitCommand(1)),
-            elevator.setTarget2(Elevator.State.L0)
-        )
-        : new InstantCommand());
-        NamedCommands.registerCommand("intakeCoral", false ? new SequentialCommandGroup(
-            take.runIntake(()-> 1).raceWith(new WaitCommand(1.5)).alongWith(rampTake.runIntake(()-> 1).raceWith(new WaitCommand(1.5))),
-            take.runIntake(()-> 0).raceWith(new WaitCommand(.3)).alongWith(rampTake.runIntake(()-> 0).raceWith(new WaitCommand(.3)))
+        boolean useArm = false;
+        boolean useElevator = true;
+        boolean useIntake = false;
+
+        NamedCommands.registerCommand("arm hold", useArm ? arm.setTarget2(Arm.State.HOLDING) : new InstantCommand());
+        NamedCommands.registerCommand("arm intake", useArm ? arm.setTarget2(Arm.State.INTAKING) : new InstantCommand());
+        NamedCommands.registerCommand("elevator L4", useElevator ? elevator.setTarget2(Elevator.State.L4) : new InstantCommand());
+        NamedCommands.registerCommand("score", new SequentialCommandGroup(
+            useArm ? arm.setTarget(Arm.State.SCORING).raceWith(new WaitCommand(1)) : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(1.5)) : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 0).raceWith(new WaitCommand(.3)) : new InstantCommand(),
+            useArm ? arm.setTarget(Arm.State.HOLDING).raceWith(new WaitCommand(1)) : new InstantCommand(),
+            useElevator ? elevator.setTarget2(Elevator.State.L0) : new InstantCommand()
+        ));
+        NamedCommands.registerCommand("intakeCoral", new SequentialCommandGroup(
+            useIntake ? take.runIntake(()-> 1).raceWith(new WaitCommand(1.5)).alongWith(rampTake.runIntake(()-> 1).raceWith(new WaitCommand(1.5))) : new InstantCommand(),
+            useIntake ? take.runIntake(()-> 0).raceWith(new WaitCommand(.3)).alongWith(rampTake.runIntake(()-> 0).raceWith(new WaitCommand(.3))) : new InstantCommand()
         
-        ) : new InstantCommand());
-        NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false) : new InstantCommand());
-        NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true) : new InstantCommand());
+        ));
+        NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(3)) : new InstantCommand());
+        NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(3)) : new InstantCommand());
         // NamedCommands.registerCommand("score", new InstantCommand());
         // NamedCommands.registerCommand("score", new SequentialCommandGroup(
         //         take.runOuttake(()->1).raceWith(new WaitCommand(1.5)),
@@ -178,6 +182,15 @@ public class RobotContainer {
         // ));
 
         autoChooser = AutoBuilder.buildAutoChooser();
+        autoChooser.addOption("elevator test", new SequentialCommandGroup(
+            elevator.setTarget2(Elevator.State.L4),
+            new WaitCommand(1.5),
+            elevator.setTarget2(Elevator.State.L0),
+            new WaitCommand(1.5),
+            elevator.setTarget2(Elevator.State.L4),
+            new WaitCommand(1.5),
+            elevator.setTarget2(Elevator.State.L0)
+        ));
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         // configureTester();
@@ -199,8 +212,10 @@ public class RobotContainer {
         
 
         // operator.povLeft().whileTrue(new TargetAlign(swerve));
-        new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
-        new Trigger(() -> driver.getPOV() == 90).whileTrue(new TargetAlign(swerve, true));
+        // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
+        // new Trigger(() -> driver.getPOV() == 90).whileTrue(new TargetAlign(swerve, true));
+        driverC.leftBumper().whileTrue(new TargetAlign(swerve, false));
+        driverC.rightBumper().whileTrue(new TargetAlign(swerve, true));
         
         
 
@@ -208,14 +223,14 @@ public class RobotContainer {
         // cancelling on release.
         // m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
 
-        new Trigger(driver::getYButtonPressed).onTrue(swerve.runOnce(swerve::zeroHeading));
+        driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
         // driver.leftBumper().onTrue(new InstantCommand(swerve::))
         // operator.a().and(operator.b()).getAsBoolean();
 
 
-        operator.povDown().and(arm::isSafeToLift).onTrue(elevator.setTarget(Elevator.State.L0));
-        operator.povRight().and(arm::isSafeToLift).onTrue(elevator.setTarget(Elevator.State.L3));
-        operator.povUp().and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L4));
+        operator.povDown().or(driverC.povDown()).and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L0));
+        operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L3));
+        operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L4));
 
         // operator.povLeft().or(() -> driver.getPOV() == 270).whileTrue(glitter.intakeReady());
         // operator.povLeft().or(() -> driver.getPOV() == 270).whileFalse(glitter.intakeNotReady());

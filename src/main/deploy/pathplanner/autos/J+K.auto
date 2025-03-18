@@ -24,21 +24,28 @@
           }
         },
         {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevator L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignToReefR"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "score"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "elevator L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "alignToReefL"
           }
         },
         {
@@ -96,6 +103,12 @@
           "type": "named",
           "data": {
             "name": "score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "alignToReefL"
           }
         }
       ]

@@ -226,7 +226,7 @@ public class SwerveDrive extends SubsystemBase {
         // LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightConstants.name);
         LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LimelightConstants.name);
 
-        if (Math.abs(gyro.getRate()) > 360 || vis.tagCount < 1)
+        if (vis == null || Math.abs(gyro.getRate()) > 360 || vis.tagCount < 1)
             return;
         
         poseEstimator.addVisionMeasurement(

@@ -92,7 +92,7 @@ public final class Constants {
 
         public static Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
         
-        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.05, 0, 0);
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.08, 0, 0);
     }
 
     public static final class SwerveConstants {

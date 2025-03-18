@@ -22,7 +22,7 @@ import java.util.function.DoubleSupplier;
 public class Elevator extends SubsystemBase {
     private final TalonFX motor, motor2;
 
-    private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2, 5);
+    private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2.5, 4);
     private ProfiledPIDController controller = new ProfiledPIDController(2.5, 0, 0.0001, constraints);
     private PIDController basicController = new PIDController(0.1, 0, 0);
 
@@ -79,7 +79,7 @@ public class Elevator extends SubsystemBase {
         motor2.setControl(new Follower(motor.getDeviceID(), true));
         // motor2.configure(config.inverted(true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        controller.setTolerance(0.005);
+        controller.setTolerance(0.011, .01);
         basicController.setTolerance(0.02);
 
         // routine = new SysIdRoutine(
@@ -161,10 +161,10 @@ public class Elevator extends SubsystemBase {
     // public double getVelocity() {
     //     return 0;
     // }
-    public double getError(){
+    public double getError() {
         return getTarget().meters()-getPosition().in(Units.Meters);
     }
-    public double getError(double target){
+    public double getError(double target) {
         return target-getPosition().in(Units.Meters);
     }
     public Distance getPosition() {
@@ -234,6 +234,7 @@ public class Elevator extends SubsystemBase {
         motor.set(power);
     }
 
+    @Deprecated
     public void runBasic() {
         motor.set((basicController.atSetpoint() ? 0 : basicController.calculate(getPosition().in(Units.Meters), getTarget().meters()))
              + feedforward(getTarget().meters() - getPosition().in(Units.Meters))

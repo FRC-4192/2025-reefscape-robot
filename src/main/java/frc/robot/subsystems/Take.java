@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.spark.SparkFlex;
@@ -52,6 +53,7 @@ public class Take extends SubsystemBase {
 
 
     public Command outtake(){
+        // AtomicBoolean spiked = new AtomicBoolean()boo
         return new FunctionalCommand(
             () -> filteredCurrent=57,
             () -> runTakeRaw(-1),

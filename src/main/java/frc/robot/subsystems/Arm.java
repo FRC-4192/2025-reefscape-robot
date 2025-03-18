@@ -39,7 +39,7 @@ public class Arm extends SubsystemBase {
     private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        INTAKING(-75),
+        INTAKING(-55),
         HOLDING(105),
         SCORING(90 - 32.211),
         EJECTING(-80), // L1 scoring or throwing away unwanted coral
@@ -156,7 +156,7 @@ public class Arm extends SubsystemBase {
     }
     
     public Command rezero() {
-        return runEnd(() -> wrist.set(.2), stay()::execute).finallyDo(() -> offsetOffset = offsetOffset.plus(ArmConstants.START_HORIZONTAL_OFFSET.minus(getPosition())));
+        return runEnd(() -> wrist.set(.075), stay()::execute).finallyDo(() -> offsetOffset = offsetOffset.plus(ArmConstants.START_HORIZONTAL_OFFSET.minus(getPosition())));
     }
 
     // public Command setRawTake(double power){
