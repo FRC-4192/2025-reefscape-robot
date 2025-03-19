@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoScore;
@@ -40,13 +41,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
@@ -149,15 +143,15 @@ public class RobotContainer {
         boolean useElevator = true;
         boolean useIntake = false;
 
-        NamedCommands.registerCommand("arm hold", useArm ? arm.setTarget2(Arm.State.HOLDING) : new InstantCommand());
-        NamedCommands.registerCommand("arm intake", useArm ? arm.setTarget2(Arm.State.INTAKING) : new InstantCommand());
-        NamedCommands.registerCommand("elevator L4", useElevator ? elevator.setTarget2(Elevator.State.L4) : new InstantCommand());
+        NamedCommands.registerCommand("arm hold", useArm ? arm.setTarget2(Arm.State.HOLDING).asProxy() : new InstantCommand());
+        NamedCommands.registerCommand("arm intake", useArm ? arm.setTarget2(Arm.State.INTAKING).asProxy() : new InstantCommand());
+        NamedCommands.registerCommand("elevator L4", useElevator ? elevator.setTarget2(Elevator.State.L4).asProxy() : new InstantCommand());
         NamedCommands.registerCommand("score", new SequentialCommandGroup(
-            useArm ? arm.setTarget(Arm.State.SCORING).raceWith(new WaitCommand(1)) : new InstantCommand(),
-            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(1.5)) : new InstantCommand(),
-            useIntake ? take.runOuttake(()-> 0).raceWith(new WaitCommand(.3)) : new InstantCommand(),
-            useArm ? arm.setTarget(Arm.State.HOLDING).raceWith(new WaitCommand(1)) : new InstantCommand(),
-            useElevator ? elevator.setTarget2(Elevator.State.L0) : new InstantCommand()
+            useArm ? arm.setTarget(Arm.State.SCORING).raceWith(new WaitCommand(1)).asProxy() : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(1.5)).asProxy() : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 0).raceWith(new WaitCommand(.3)).asProxy() : new InstantCommand(),
+            useArm ? arm.setTarget(Arm.State.HOLDING).raceWith(new WaitCommand(1)).asProxy() : new InstantCommand(),
+            useElevator ? elevator.setTarget2(Elevator.State.L0).asProxy() : new InstantCommand()
         ));
         NamedCommands.registerCommand("intakeCoral", new SequentialCommandGroup(
             useIntake ? take.runIntake(()-> 1).raceWith(new WaitCommand(1.5)).alongWith(rampTake.runIntake(()-> 1).raceWith(new WaitCommand(1.5))) : new InstantCommand(),
@@ -182,7 +176,7 @@ public class RobotContainer {
         // ));
 
         autoChooser = AutoBuilder.buildAutoChooser();
-        autoChooser.addOption("elevator test", new SequentialCommandGroup(
+        autoChooser.addOption("elevator test", Commands.sequence(
             elevator.setTarget2(Elevator.State.L4).asProxy(),
             new WaitCommand(1.5),
             elevator.setTarget2(Elevator.State.L0).asProxy(),
