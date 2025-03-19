@@ -183,13 +183,13 @@ public class RobotContainer {
 
         autoChooser = AutoBuilder.buildAutoChooser();
         autoChooser.addOption("elevator test", new SequentialCommandGroup(
-            elevator.setTarget2(Elevator.State.L4),
+            elevator.setTarget2(Elevator.State.L4).asProxy(),
             new WaitCommand(1.5),
-            elevator.setTarget2(Elevator.State.L0),
+            elevator.setTarget2(Elevator.State.L0).asProxy(),
             new WaitCommand(1.5),
-            elevator.setTarget2(Elevator.State.L4),
+            elevator.setTarget2(Elevator.State.L4).asProxy(),
             new WaitCommand(1.5),
-            elevator.setTarget2(Elevator.State.L0)
+            elevator.setTarget2(Elevator.State.L0).asProxy()
         ));
         SmartDashboard.putData("Auto Chooser", autoChooser);
 

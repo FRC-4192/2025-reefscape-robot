@@ -119,38 +119,6 @@ public class Elevator extends SubsystemBase {
         setDefaultCommand(stay());
     }
 
-    private void motorSetup() {
-        // motor.getConfigurator().apply(
-        //     new TalonFXConfiguration()
-        //         .withCurrentLimits(
-        //             new CurrentLimitsConfigs()
-        //                 .withStatorCurrentLimit(30)
-        //                 .withStatorCurrentLimitEnable(true)
-        //         )
-        // );
-        // motor.setNeutralMode(NeutralModeValue.Brake);
-        // // TODO: torque control or percent supply output control?
-        // motor2.setControl(new Follower(9, false));
-        // motor3.setControl(new Follower(9, false));
-        // motor2.setNeutralMode(NeutralModeValue.Brake);
-        // motor3.setNeutralMode(NeutralModeValue.Brake);
-        // motor2.getConfigurator().apply(
-        //     new TalonFXConfiguration()
-        //         .withCurrentLimits(
-        //             new CurrentLimitsConfigs()
-        //                 .withStatorCurrentLimit(30)
-        //                 .withStatorCurrentLimitEnable(true)
-        //         )
-        // );
-        // motor3.getConfigurator().apply(
-        //     new TalonFXConfiguration()
-        //         .withCurrentLimits(
-        //             new CurrentLimitsConfigs()
-        //                 .withStatorCurrentLimit(30)
-        //                 .withStatorCurrentLimitEnable(true)
-        //         )
-        // );
-    }
 
     public State getTarget() {
         return state;
@@ -203,6 +171,8 @@ public class Elevator extends SubsystemBase {
         // SmartDashboard.putNumber("Elevator Set Velo", controller.getSetpoint().velocity);
         SmartDashboard.putNumberArray("Elevator Pos", new double[] { controller.getSetpoint().position, getPosition().in(Units.Meters) });
         SmartDashboard.putNumberArray("Elevator Vel", new double[] { controller.getSetpoint().velocity, getVelocity().in(Units.MetersPerSecond) });
+
+        SmartDashboard.putString("Elevator Command", getCurrentCommand().getName());
     }
 
     /**
@@ -227,7 +197,7 @@ public class Elevator extends SubsystemBase {
             (interrupted) -> motor.set(interrupted ? 0 : ElevatorConstants.feedforward.calculate(0)),
             controller::atGoal,
             this
-        );
+        ).withName("run to " + getTarget().toString());
     }
 
     public void runRaw(double power) {
@@ -251,7 +221,7 @@ public class Elevator extends SubsystemBase {
     // public Command runBasic(DoubleSupplier )
 
     public Command stay() {
-        return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : feedforward(0)));
+        return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : feedforward(0))).withName("Stay");
     }
 
 
