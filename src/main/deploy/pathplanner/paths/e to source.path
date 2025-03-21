@@ -9,19 +9,19 @@
       "prevControl": null,
       "nextControl": {
         "x": 4.3602352262478865,
-        "y": 2.4422191064482743
+        "y": 2.442219106448274
       },
       "isLocked": false,
-      "linkedName": "Coral E"
+      "linkedName": "Coral E Bad"
     },
     {
       "anchor": {
-        "x": 1.515769867549669,
-        "y": 0.795
+        "x": 1.249,
+        "y": 0.645
       },
       "prevControl": {
-        "x": 2.595959724974015,
-        "y": 1.4407379518084311
+        "x": 2.329189857424346,
+        "y": 1.2907379518084312
       },
       "nextControl": null,
       "isLocked": false,

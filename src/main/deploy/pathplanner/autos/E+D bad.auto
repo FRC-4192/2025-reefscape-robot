@@ -5,25 +5,13 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "arm intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intakeCoral"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "start to e real"
+                  "pathName": "start to e"
                 }
               },
               {
@@ -67,26 +55,13 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "e to source real"
+                  "pathName": "e to source"
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.4
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "arm intake"
-                      }
-                    }
-                  ]
+                  "name": "arm intake"
                 }
               }
             ]
@@ -99,22 +74,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "source to d real"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "arm hold"
-                }
-              }
-            ]
+            "pathName": "source to d"
           }
         },
         {

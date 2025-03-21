@@ -42,8 +42,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+<<<<<<< Updated upstream
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+=======
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+>>>>>>> Stashed changes
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -110,7 +117,7 @@ public class RobotContainer {
         // ));
         elevator.setDefaultCommand(elevator.stay());
         // if(operator.getRightY()>.05||operator.getRightY()<-.05)
-        arm.setDefaultCommand(arm.stay());
+        arm.setDefaultCommand(arm.stayPID());
 
         // arm.setDefaultCommand(new FunctionalCommand(
         //     () -> {},
@@ -129,7 +136,7 @@ public class RobotContainer {
         //     arm
         // ));
         take.setDefaultCommand(take.runTake(() -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
-        rampTake.setDefaultCommand(rampTake.runTake(() -> .5 * (operator.getRightTriggerAxis() - operator.getLeftTriggerAxis())));
+        rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
 
         // Configure the trigger bindings
         configureBindings();
@@ -145,27 +152,31 @@ public class RobotContainer {
         //     ? stream.filter(auto -> auto.getName().startsWith("comp"))
         //     : stream
         // );
-        boolean useArm = false;
+        boolean useArm = true;
         boolean useElevator = true;
-        boolean useIntake = false;
+        boolean useIntake = true;
 
         NamedCommands.registerCommand("arm hold", useArm ? arm.setTarget2(Arm.State.HOLDING) : new InstantCommand());
         NamedCommands.registerCommand("arm intake", useArm ? arm.setTarget2(Arm.State.INTAKING) : new InstantCommand());
         NamedCommands.registerCommand("elevator L4", useElevator ? elevator.setTarget2(Elevator.State.L4) : new InstantCommand());
         NamedCommands.registerCommand("score", new SequentialCommandGroup(
+<<<<<<< Updated upstream
             useArm ? arm.setTarget(Arm.State.SCORING).raceWith(new WaitCommand(1)) : new InstantCommand(),
             useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(1.5)) : new InstantCommand(),
             useIntake ? take.runOuttake(()-> 0).raceWith(new WaitCommand(.3)) : new InstantCommand(),
             useArm ? arm.setTarget(Arm.State.HOLDING).raceWith(new WaitCommand(1)) : new InstantCommand(),
             useElevator ? elevator.setTarget2(Elevator.State.L0) : new InstantCommand()
+=======
+            useArm ? arm.setTarget2(Arm.State.SCORING).asProxy() : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.8)).asProxy() : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 0).raceWith(new WaitCommand(.01)).asProxy() : new InstantCommand(),
+            useArm ? arm.setTarget2(Arm.State.HOLDING).asProxy() : new InstantCommand(),
+            useElevator ? elevator.setTarget2(Elevator.State.L0).asProxy() : new InstantCommand()
+>>>>>>> Stashed changes
         ));
-        NamedCommands.registerCommand("intakeCoral", new SequentialCommandGroup(
-            useIntake ? take.runIntake(()-> 1).raceWith(new WaitCommand(1.5)).alongWith(rampTake.runIntake(()-> 1).raceWith(new WaitCommand(1.5))) : new InstantCommand(),
-            useIntake ? take.runIntake(()-> 0).raceWith(new WaitCommand(.3)).alongWith(rampTake.runIntake(()-> 0).raceWith(new WaitCommand(.3))) : new InstantCommand()
-        
-        ));
-        NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(3)) : new InstantCommand());
-        NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(3)) : new InstantCommand());
+        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intake(.5).raceWith(rampTake.runIntake(() -> .3)) : new InstantCommand() );
+        NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+        NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(1.5)) : new InstantCommand());
         // NamedCommands.registerCommand("score", new InstantCommand());
         // NamedCommands.registerCommand("score", new SequentialCommandGroup(
         //         take.runOuttake(()->1).raceWith(new WaitCommand(1.5)),
@@ -183,13 +194,22 @@ public class RobotContainer {
 
         autoChooser = AutoBuilder.buildAutoChooser();
         autoChooser.addOption("elevator test", new SequentialCommandGroup(
+<<<<<<< Updated upstream
             elevator.setTarget2(Elevator.State.L4),
+=======
+            elevator.setTarget2(Elevator.State.L4).asProxy(),
+>>>>>>> Stashed changes
             new WaitCommand(1.5),
             elevator.setTarget2(Elevator.State.L0),
             new WaitCommand(1.5),
             elevator.setTarget2(Elevator.State.L4),
             new WaitCommand(1.5),
             elevator.setTarget2(Elevator.State.L0)
+        ));
+        autoChooser.addOption("take test", Commands.sequence(
+            take.runIntake(() -> .7).alongWith(rampTake.runIntake(() -> .4)).raceWith(Commands.waitSeconds(3)),
+            Commands.waitSeconds(1),
+            take.runIntake(() -> 0).alongWith(rampTake.runIntake(() -> 0))
         ));
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -248,6 +268,8 @@ public class RobotContainer {
         operator.a().or(() -> driver.getAButton()).and(elevator::safeToIntake).onTrue(arm.setTarget(Arm.State.INTAKING));
         operator.b().or(() -> driver.getBButton()).onTrue(arm.setTarget(Arm.State.SCORING));
         operator.x().or(() -> driver.getXButton()).onTrue(arm.setTarget(Arm.State.HOLDING));
+        operator.rightBumper().onTrue(take.intake(.5).raceWith(rampTake.runIntake(() -> .3)));
+        operator.leftBumper().onTrue(take.outtake(.5));
 
         operator.leftStick().whileTrue(arm.rezero());
         operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(-operator.getRightY()).finallyDo(arm::stay));

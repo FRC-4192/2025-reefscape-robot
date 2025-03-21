@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.AngleUnit;
@@ -30,6 +31,7 @@ public class Arm extends SubsystemBase {
 
     private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(11, 14);
     private ProfiledPIDController controller = new ProfiledPIDController(0.8, 0, 0, constraints);
+    private PIDController simpleController = new PIDController(.5, 0, 0);
 
     public static final double WRIST_RATIO = 1./16/4.5;
 
@@ -79,7 +81,7 @@ public class Arm extends SubsystemBase {
         // // config.closedLoop.pidf(target, target, target, target)
         // take.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-        controller.setTolerance(.01);
+        controller.setTolerance(.03);
 
         wristRoutine = new SysIdRoutine(
             new SysIdRoutine.Config(),
@@ -232,6 +234,10 @@ public class Arm extends SubsystemBase {
     public Command stay() {
         return run(() -> wrist.set(feedforward(getPosition(), 0)));
     }
+    public Command stayPID() {
+        return run(() -> wrist.set(simpleController.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians) + adjust) + feedforward(getPosition(), 0)));
+    }
+    
 
 
     public static double feedforward(Angle position, double velocity) {

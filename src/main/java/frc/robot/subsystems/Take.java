@@ -28,7 +28,8 @@ public class Take extends SubsystemBase {
     private double filteredCurrent;
 
     private ExponentialLowPassFilter filter = new ExponentialLowPassFilter(0.008, 1.7); // 0.00012, 2.8
-
+    private boolean spike;
+        
     public Take() {
         take = new SparkFlex(16, MotorType.kBrushless);
 
@@ -52,20 +53,25 @@ public class Take extends SubsystemBase {
     }
 
 
-    public Command outtake(){
-        // AtomicBoolean spiked = new AtomicBoolean()boo
+    public Command outtake(double power){
+        spike=false;
         return new FunctionalCommand(
-            () -> filteredCurrent=57,
-            () -> runTakeRaw(-1),
+            () -> {},
+            () -> {
+                runTakeRaw(-power);
+                spike= (!spike) ? filteredCurrent >= 50: true;
+            },
             (x) -> runTakeRaw(0),
-            () -> filteredCurrent<=45,
+            () -> filteredCurrent<=45&&spike,
             this
         );
     }
-    public Command intake(){
+    public Command intake(double power){
         return new FunctionalCommand(
-            () -> filteredCurrent=45,
-            () -> runTakeRaw(1),
+            () -> {},
+            () -> {
+                runTakeRaw(power);
+            },
             (x) -> runTakeRaw(0),
             () -> filteredCurrent>=57,
             this

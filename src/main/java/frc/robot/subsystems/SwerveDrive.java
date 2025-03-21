@@ -5,6 +5,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -31,6 +32,9 @@ public class SwerveDrive extends SubsystemBase {
     SwerveModule[]        swerveModules; // Psuedo-class representing swerve modules.
 
     SwerveDrivePoseEstimator poseEstimator; // to replace odo bc better
+
+    public Field2d fieldO = new Field2d();
+    public Field2d fieldV = new Field2d();
     
     // Constructor
     public SwerveDrive() {
@@ -79,6 +83,9 @@ public class SwerveDrive extends SubsystemBase {
             },
             this
         );
+
+        SmartDashboard.putData("FieldO", fieldO);
+        SmartDashboard.putData("FieldV", fieldV);
     }
 
     public Pose2d getPose() {
@@ -210,6 +217,9 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("OdoV yaw", getHeadingV().getDegrees());
         SmartDashboard.putNumber("OdoV posX", getPoseV().getMeasureX().in(Units.Meters));
         SmartDashboard.putNumber("OdoV posY", getPoseV().getMeasureY().in(Units.Meters));
+
+        fieldO.setRobotPose(getPose());
+        fieldV.setRobotPose(getPoseV());
     }
     
 
@@ -217,10 +227,10 @@ public class SwerveDrive extends SubsystemBase {
         LimelightHelpers.SetRobotOrientation(
             LimelightConstants.name,
             getHeadingV().getDegrees(),
+            gyro.getRate(),
+            gyro.getPitch(),
             0,
-            0,
-            0,
-            0,
+            gyro.getRoll(),
             0
         );
         // LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightConstants.name);

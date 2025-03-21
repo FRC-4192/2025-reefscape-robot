@@ -5,6 +5,18 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "arm intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeCoral"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
@@ -65,7 +77,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.0
+                        "waitTime": 0.4
                       }
                     },
                     {
@@ -78,6 +90,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeCoral"
           }
         },
         {
@@ -100,15 +118,28 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "score"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevator L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignToReefL"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "alignToReefL"
+            "name": "score"
           }
         }
       ]

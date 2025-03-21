@@ -23,7 +23,7 @@ public class TargetAlign extends Command {
     private PIDController rotationController = new PIDController(.06, 0, 0.0001);
     private double kStatic = .16;
 
-    private static double bumperLength = .912;
+    private static double bumperLength = .914;
     private static double bumperWidth = .902;
     private static double reefSeparation = .33;
         
@@ -51,7 +51,7 @@ public class TargetAlign extends Command {
         forwardController.reset();
         strafeController.reset();
         rotationController.reset();
-        // LimelightHelpers.setLEDMode_ForceOn(LimelightConstants.name);
+        LimelightHelpers.setLEDMode_ForceOn(LimelightConstants.name);
     }
 
     @Override
@@ -80,6 +80,6 @@ public class TargetAlign extends Command {
     @Override
     public void end(boolean interrupted) {
         swerve.drive(new ChassisSpeeds());
-        // LimelightHelpers.setLEDMode_ForceBlink(LimelightConstants.name);
+        LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name);
     }
 }

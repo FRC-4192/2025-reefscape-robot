@@ -203,6 +203,11 @@ public class Elevator extends SubsystemBase {
         // SmartDashboard.putNumber("Elevator Set Velo", controller.getSetpoint().velocity);
         SmartDashboard.putNumberArray("Elevator Pos", new double[] { controller.getSetpoint().position, getPosition().in(Units.Meters) });
         SmartDashboard.putNumberArray("Elevator Vel", new double[] { controller.getSetpoint().velocity, getVelocity().in(Units.MetersPerSecond) });
+<<<<<<< Updated upstream
+=======
+
+        SmartDashboard.putString("Elevator Command", getCurrentCommand() == null ? "null" : getCurrentCommand().getName());
+>>>>>>> Stashed changes
     }
 
     /**
@@ -251,7 +256,11 @@ public class Elevator extends SubsystemBase {
     // public Command runBasic(DoubleSupplier )
 
     public Command stay() {
+<<<<<<< Updated upstream
         return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : feedforward(0)));
+=======
+        return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : feedforward(0))).withName("stay");
+>>>>>>> Stashed changes
     }
 
 
