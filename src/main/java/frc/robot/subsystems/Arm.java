@@ -41,7 +41,7 @@ public class Arm extends SubsystemBase {
     private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        INTAKING(-55),
+        INTAKING(-60),
         HOLDING(105),
         SCORING(90 - 32.211),
         EJECTING(-80), // L1 scoring or throwing away unwanted coral

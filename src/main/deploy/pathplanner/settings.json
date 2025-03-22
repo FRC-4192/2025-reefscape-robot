@@ -12,7 +12,8 @@
   ],
   "autoFolders": [
     "1+0",
-    "1+1"
+    "1+1",
+    "1+.5"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 5.0,

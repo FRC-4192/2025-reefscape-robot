@@ -30,8 +30,8 @@ public class Elevator extends SubsystemBase {
     private State state = State.L0;
 
     public enum State {
-        L0(0),
-        L1(0.02),
+        L0(0.00),
+        L1(0.05),
         L2(0.5),
         L3(0.22),
         L4(0.75);
@@ -156,7 +156,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean safeToIntake() {
-        return getTarget() == State.L0;
+        return getTarget() == State.L0 || getTarget() == State.L1;
     }
 
     @Override
@@ -221,7 +221,7 @@ public class Elevator extends SubsystemBase {
     // public Command runBasic(DoubleSupplier )
 
     public Command stay() {
-        return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : feedforward(0))).withName("Stay");
+        return run(() -> motor.set(getPosition().in(Units.Meters) < .03 ? 0 : feedforward(0))).withName("stay");
     }
 
 
@@ -245,6 +245,10 @@ public class Elevator extends SubsystemBase {
 
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return routine.dynamic(direction);
+    }
+
+    public State getState() {
+        return state;
     }
 }
 

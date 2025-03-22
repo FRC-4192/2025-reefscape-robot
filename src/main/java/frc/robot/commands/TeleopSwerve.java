@@ -58,13 +58,13 @@ public class TeleopSwerve extends Command {
             glitter.setPWMRaw(fieldRelative ? 1905 : 1785);
         }
         
-        double translationVal = MathUtil.applyDeadband(drive.getAsDouble(), Constants.OperatorConstants.stickDeadband);
-        double strafeVal = MathUtil.applyDeadband(strafe.getAsDouble(), Constants.OperatorConstants.stickDeadband);
+        double translationVal = MathUtil.applyDeadband(-drive.getAsDouble(), Constants.OperatorConstants.stickDeadband);
+        double strafeVal = MathUtil.applyDeadband(-strafe.getAsDouble(), Constants.OperatorConstants.stickDeadband);
         double rotationVal = MathUtil.applyDeadband(-turn.getAsDouble(), Constants.OperatorConstants.stickDeadband);
 
         swerve.drive(
             new Pose2d(
-                new Translation2d(translationVal, strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed)),
+                new Translation2d(fieldRelative ? translationVal : -translationVal, fieldRelative ? strafeVal : -strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed)),
                 Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed))
             ),
             fieldRelative,

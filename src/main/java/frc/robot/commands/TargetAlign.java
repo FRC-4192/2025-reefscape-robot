@@ -18,8 +18,8 @@ public class TargetAlign extends Command {
     private boolean strafe;
     private boolean turn;
 
-    private PIDController forwardController = new PIDController(1.8, 0, 0.0001);
-    private PIDController strafeController = new PIDController(1.8, 0, 0.0001);
+    private PIDController forwardController = new PIDController(2.5, 0, 0.0001);
+    private PIDController strafeController = new PIDController(2.5, 0, 0.0001);
     private PIDController rotationController = new PIDController(.06, 0, 0.0001);
     private double kStatic = .16;
 

@@ -4,29 +4,55 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.TargetAlign;
 import frc.robot.commands.TeleopSwerve;
+import frc.robot.commands.TimedCommand;
 
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.Glitter;
-import frc.robot.subsystems.RampTake;
+// import frc.robot.subsystems.RampTake;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Take;
 
+import java.time.Duration;
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.jar.Attributes.Name;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -48,7 +74,7 @@ public class RobotContainer {
     private final Elevator elevator = new Elevator();
     private final Arm arm = new Arm();
     private final Take take = new Take();
-    private final RampTake rampTake = new RampTake();
+    // private final RampTake rampTake = new RampTake();
     private final Glitter glitter = new Glitter();
 
     private final SendableChooser<Command> autoChooser;
@@ -64,7 +90,7 @@ public class RobotContainer {
             driver::getLeftX,
             driver::getRightX,
             driver::getStartButtonPressed,
-            () -> driver.getLeftStickButton() || driver.getRightStickButton() || elevator.getTarget() != Elevator.State.L0
+            () -> driver.getLeftStickButton() || driver.getRightStickButton() || (elevator.getTarget() != Elevator.State.L0 && !op.getBackButton())
         ));
 
         // swerve.setDefaultCommand(new TeleopSwerve(
@@ -104,7 +130,7 @@ public class RobotContainer {
         //     arm
         // ));
         take.setDefaultCommand(take.runTake(() -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
-        rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
+        // rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
 
         // Configure the trigger bindings
         configureBindings();
@@ -127,14 +153,23 @@ public class RobotContainer {
         NamedCommands.registerCommand("arm hold", useArm ? arm.setTarget2(Arm.State.HOLDING).asProxy() : new InstantCommand());
         NamedCommands.registerCommand("arm intake", useArm ? arm.setTarget2(Arm.State.INTAKING).asProxy() : new InstantCommand());
         NamedCommands.registerCommand("elevator L4", useElevator ? elevator.setTarget2(Elevator.State.L4).asProxy() : new InstantCommand());
+        NamedCommands.registerCommand("elevator L1", useElevator ? elevator.setTarget2(Elevator.State.L1).asProxy() : new InstantCommand());
+        NamedCommands.registerCommand("elevator L0", useElevator ? elevator.setTarget2(Elevator.State.L0).asProxy() : new InstantCommand());
         NamedCommands.registerCommand("score", new SequentialCommandGroup(
+            // take.runTakeOnce(0).asProxy().alongWith(rampTake.runTakeOnce(0).asProxy()),
             useArm ? arm.setTarget2(Arm.State.SCORING).asProxy() : new InstantCommand(),
-            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.8)).asProxy() : new InstantCommand(),
-            useIntake ? take.runOuttake(()-> 0).raceWith(new WaitCommand(.01)).asProxy() : new InstantCommand(),
-            useArm ? arm.setTarget2(Arm.State.HOLDING).asProxy() : new InstantCommand(),
-            useElevator ? elevator.setTarget2(Elevator.State.L0).asProxy() : new InstantCommand()
+            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.6)).asProxy() : new InstantCommand(),
+            useIntake ? take.runTakeOnce(0).raceWith(Commands.waitSeconds(.01)).asProxy() : new InstantCommand(),
+            useArm ? arm.setTarget2(Arm.State.HOLDING).asProxy().alongWith(elevator.setTarget2(Elevator.State.L0).asProxy()) : new InstantCommand()
+            // useElevator ? elevator.setTarget2(Elevator.State.L0).asProxy() : new InstantCommand()
         ));
-        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intake(.5).raceWith(rampTake.runIntake(() -> .3)) : new InstantCommand() );
+        NamedCommands.registerCommand("score mini", new SequentialCommandGroup(
+            useArm ? arm.setTarget2(Arm.State.SCORING).asProxy() : new InstantCommand(),
+            useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.5)).asProxy() : new InstantCommand(),
+            useIntake ? take.runTakeOnce(0).raceWith(Commands.waitSeconds(.01)).asProxy() : new InstantCommand()
+        ));
+        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(.5)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
+        NamedCommands.registerCommand("intake idle", /*useIntake ? rampTake.runIntake(() -> -.075).asProxy() :*/ new InstantCommand());
         NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(1.5)) : new InstantCommand());
         NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(1.5)) : new InstantCommand());
         // NamedCommands.registerCommand("score", new InstantCommand());
@@ -153,7 +188,7 @@ public class RobotContainer {
         // ));
 
         autoChooser = AutoBuilder.buildAutoChooser();
-        autoChooser.addOption("elevator test", Commands.sequence(
+        autoChooser.addOption("elevator test", new SequentialCommandGroup(
             elevator.setTarget2(Elevator.State.L4).asProxy(),
             new WaitCommand(1.5),
             elevator.setTarget2(Elevator.State.L0).asProxy(),
@@ -162,11 +197,11 @@ public class RobotContainer {
             new WaitCommand(1.5),
             elevator.setTarget2(Elevator.State.L0).asProxy()
         ));
-        autoChooser.addOption("take test", Commands.sequence(
-            take.runIntake(() -> .7).alongWith(rampTake.runIntake(() -> .4)).raceWith(Commands.waitSeconds(3)),
-            Commands.waitSeconds(1),
-            take.runIntake(() -> 0).alongWith(rampTake.runIntake(() -> 0))
-        ));
+        // autoChooser.addOption("take test", Commands.sequence(
+        //     take.runIntake(() -> .7).alongWith(rampTake.runIntake(() -> .4)).raceWith(Commands.waitSeconds(3)),
+        //     Commands.waitSeconds(1),
+        //     take.runIntake(() -> 0).alongWith(rampTake.runIntake(() -> 0))
+        // ));
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         // configureTester();
@@ -190,8 +225,13 @@ public class RobotContainer {
         // operator.povLeft().whileTrue(new TargetAlign(swerve));
         // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
         // new Trigger(() -> driver.getPOV() == 90).whileTrue(new TargetAlign(swerve, true));
+        // Command rumbleD = Commands.startEnd(
+        //     () -> driverC.setRumble(RumbleType.kBothRumble, .5),
+        //     () -> driverC.setRumble(RumbleType.kBothRumble, 0)
+        // ).until(() -> arm.getState() == Arm.State.SCORING);
         driverC.leftBumper().whileTrue(new TargetAlign(swerve, false));
         driverC.rightBumper().whileTrue(new TargetAlign(swerve, true));
+
         
         
 
@@ -201,10 +241,21 @@ public class RobotContainer {
 
         driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
         // driver.leftBumper().onTrue(new InstantCommand(swerve::))
-        // operator.a().and(operator.b()).getAsBoolean();
+        // operator.a().and(operator.b()).getAsBoolean()
 
+        
+        operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift()||elevator.getState()==Elevator.State.L1).onTrue(elevator.setTarget2(Elevator.State.L0));
+        driverC.povRight().onTrue(elevator.setTarget2(Elevator.State.L1));
+        
+        new Trigger(() -> (driver.getLeftX()!=0
+            ||driver.getLeftY()!=0
+            ||driver.getRightX()!=0)
+            &&(elevator.getState()==Elevator.State.L1||elevator.getState()==Elevator.State.L0)
+        )
+            .onTrue(elevator.setTarget2(Elevator.State.L0))
+            .onFalse(elevator.setTarget2(Elevator.State.L1));
+        
 
-        operator.povDown().or(driverC.povDown()).and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L0));
         operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L3));
         operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTarget2(Elevator.State.L4));
 
@@ -224,7 +275,7 @@ public class RobotContainer {
         operator.a().or(() -> driver.getAButton()).and(elevator::safeToIntake).onTrue(arm.setTarget(Arm.State.INTAKING));
         operator.b().or(() -> driver.getBButton()).onTrue(arm.setTarget(Arm.State.SCORING));
         operator.x().or(() -> driver.getXButton()).onTrue(arm.setTarget(Arm.State.HOLDING));
-        operator.rightBumper().onTrue(take.intake(.5).raceWith(rampTake.runIntake(() -> .3)));
+        operator.rightBumper().onTrue(take.intakeCoral(.5)/*.raceWith(rampTake.runIntake(() -> .3))*/);
         operator.leftBumper().onTrue(take.outtake(.5));
 
         operator.leftStick().whileTrue(arm.rezero());

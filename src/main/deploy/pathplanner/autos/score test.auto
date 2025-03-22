@@ -5,28 +5,40 @@
     "data": {
       "commands": [
         {
-          "type": "race",
+          "type": "path",
+          "data": {
+            "pathName": "1m"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "arm hold"
+          }
+        },
+        {
+          "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "named",
                 "data": {
-                  "name": "intake idle"
+                  "name": "alignToReefL"
                 }
               },
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 10.0
+                  "name": "elevator L4"
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "forward1"
+            "name": "score"
           }
         }
       ]

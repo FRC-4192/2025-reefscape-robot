@@ -66,13 +66,13 @@ public class Take extends SubsystemBase {
             this
         );
     }
-    public Command intake(double power){
+    public Command intakeCoral(double power){
         return new FunctionalCommand(
             () -> {},
             () -> {
                 runTakeRaw(power);
             },
-            (x) -> runTakeRaw(0),
+            (x) -> runTakeRaw(x ? power : 0),
             () -> filteredCurrent>=57,
             this
         );
@@ -91,6 +91,10 @@ public class Take extends SubsystemBase {
 
     public void runTakeRaw(double power) {
         take.set(power);
+    }
+
+    public Command runTakeOnce(double power) {
+        return runOnce(() -> runTakeRaw(power));
     }
 }
 // package frc.robot.subsystems;

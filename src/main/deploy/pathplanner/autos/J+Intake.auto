@@ -112,12 +112,6 @@
           }
         },
         {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
           "type": "race",
           "data": {
             "commands": [
@@ -137,78 +131,15 @@
           }
         },
         {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "source to k"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "arm hold"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "elevator L0"
-                }
-              },
-              {
-                "type": "race",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeCoral"
-                      }
-                    },
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 1.0
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "elevator L4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "alignToReefL"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "named",
           "data": {
-            "name": "score"
+            "name": "elevator L0"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "1+1",
+  "folder": "1+.5",
   "choreoAuto": false
 }
