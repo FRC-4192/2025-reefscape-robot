@@ -64,8 +64,8 @@ public class TeleopSwerve extends Command {
 
         swerve.drive(
             new Pose2d(
-                new Translation2d(fieldRelative ? translationVal : -translationVal, fieldRelative ? strafeVal : -strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed)),
-                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxSpeed))
+                new Translation2d(fieldRelative ? translationVal : -translationVal, fieldRelative ? strafeVal : -strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed)),
+                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed))
             ),
             fieldRelative,
             true

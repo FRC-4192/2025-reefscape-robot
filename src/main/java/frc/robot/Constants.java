@@ -50,7 +50,8 @@ public final class Constants {
     public static final class DriverConstants {
         public static final int controllerPort = 0;
         public static final double stickDeadband = .01;
-        public static final double swerveMaxSpeed = 0.75;
+        public static final double swerveMaxTransSpeed = 0.50;
+        public static final double swerveMaxTurnSpeed = 0.50;
         public static final double swerveSlowSpeed = 0.25;
     }
 
@@ -232,7 +233,7 @@ public final class Constants {
             /** Swerve Drive Motor Configuration */
             /* Motor Inverts and Neutral Mode */
             swerveDriveFXConfig.MotorOutput.Inverted = swerveType.driveMotorInvert;
-            swerveDriveFXConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+            swerveDriveFXConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
             /* Gear Ratio Config */
             swerveDriveFXConfig.Feedback.SensorToMechanismRatio = swerveType.driveGearRatio;

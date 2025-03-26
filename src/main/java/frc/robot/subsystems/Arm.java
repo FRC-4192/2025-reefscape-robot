@@ -42,7 +42,7 @@ public class Arm extends SubsystemBase {
 
     public enum State {
         INTAKING(-60),
-        HOLDING(105),
+        HOLDING(110),
         SCORING(90 - 32.211),
         EJECTING(-80), // L1 scoring or throwing away unwanted coral
         ALGAE(-55);
