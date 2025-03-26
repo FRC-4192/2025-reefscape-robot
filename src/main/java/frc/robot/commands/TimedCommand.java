@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 
 public class TimedCommand extends FunctionalCommand {
     private long startTime;
-    private long waitTime;
+    private final long waitTime;
     
     public TimedCommand(Runnable toRun, Runnable endRun, long waitTimeMS, Subsystem... requirements) {
         super(() -> {}, toRun, (Consumer<Boolean>) endRun, () -> false, requirements);

@@ -19,16 +19,16 @@ import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Take;
 
 public class AutoScore extends Command {
-    private Elevator elevator;
-    private Arm arm;
-    private Take take;
-    private Command prepScore;
-    private Command scoreCoral;
-    private TargetAlign align;
+    private final Elevator elevator;
+    private final Arm arm;
+    private final Take take;
+    private final Command prepScore;
+    private final Command scoreCoral;
+    private final TargetAlign align;
 
 
     public AutoScore(TargetAlign align, Elevator elevator, Arm arm, Take take) {
-        this.align =align;
+        this.align = align;
         this.elevator = elevator;
         this.arm = arm;
         this.take = take;

@@ -1,17 +1,10 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -26,7 +19,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ArmConstants;
 
 public class Arm extends SubsystemBase {
-    private TalonFX wrist;
+    private final TalonFX wrist;
     // private SparkFlex take;
 
     private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(11, 14);
@@ -49,10 +42,10 @@ public class Arm extends SubsystemBase {
 
         private final Angle angle;
 
-        private State(Angle angle) {
+        State(Angle angle) {
             this.angle = angle;
         }
-        private State(double degrees) {
+        State(double degrees) {
             this(Units.Degrees.of(degrees));
         }
 

@@ -38,10 +38,10 @@ public class Elevator extends SubsystemBase {
 
         private final Distance position; // units = motor rotations
 
-        private State(Distance position) {
+        State(Distance position) {
             this.position = position;
         }
-        private State(double meters) {
+        State(double meters) {
             this(Units.Meters.of(meters));
         }
 
@@ -120,7 +120,7 @@ public class Elevator extends SubsystemBase {
     }
 
 
-    public State getTarget() {
+    public State getState() {
         return state;
     }
     // public double getPosition() {
@@ -130,7 +130,7 @@ public class Elevator extends SubsystemBase {
     //     return 0;
     // }
     public double getError() {
-        return getTarget().meters()-getPosition().in(Units.Meters);
+        return getState().meters()-getPosition().in(Units.Meters);
     }
     public double getError(double target) {
         return target-getPosition().in(Units.Meters);
@@ -156,13 +156,13 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean safeToIntake() {
-        return getTarget() == State.L0 || getTarget() == State.L1;
+        return getState() == State.L0 || getState() == State.L1;
     }
 
     @Override
     public void periodic() {
         // motor.set(ElevatorConstants.pidConroller.calculate(getPosition(), getTarget()) + ElevatorConstants.feedforward.calculate())
-        SmartDashboard.putNumber("Elevator Target", getTarget().meters());
+        SmartDashboard.putNumber("Elevator Target", getState().meters());
         SmartDashboard.putNumber("Elevator Position", getPosition().in(Units.Meters));
         // SmartDashboard.putNumber("Elevator 15", motor2.getEncoder().getPosition());
         SmartDashboard.putNumber("Elevator Current (A)", getCurrent().in(Units.Amps));
@@ -191,13 +191,13 @@ public class Elevator extends SubsystemBase {
         return new FunctionalCommand(
             () -> controller.reset(getPosition().in(Units.Meters), getVelocity().in(Units.MetersPerSecond)),
             () -> motor.set(
-                controller.calculate(getPosition().in(Units.Meters), getTarget().meters())
+                controller.calculate(getPosition().in(Units.Meters), getState().meters())
                     + feedforward(controller.getSetpoint().velocity)
             ),
             (interrupted) -> motor.set(interrupted ? 0 : ElevatorConstants.feedforward.calculate(0)),
             controller::atGoal,
             this
-        ).withName("run to " + getTarget().toString());
+        ).withName("run to " + getState().toString());
     }
 
     public void runRaw(double power) {
@@ -206,8 +206,8 @@ public class Elevator extends SubsystemBase {
 
     @Deprecated
     public void runBasic() {
-        motor.set((basicController.atSetpoint() ? 0 : basicController.calculate(getPosition().in(Units.Meters), getTarget().meters()))
-             + feedforward(getTarget().meters() - getPosition().in(Units.Meters))
+        motor.set((basicController.atSetpoint() ? 0 : basicController.calculate(getPosition().in(Units.Meters), getState().meters()))
+             + feedforward(getState().meters() - getPosition().in(Units.Meters))
         );
     }
 
@@ -247,8 +247,5 @@ public class Elevator extends SubsystemBase {
         return routine.dynamic(direction);
     }
 
-    public State getState() {
-        return state;
-    }
 }
 

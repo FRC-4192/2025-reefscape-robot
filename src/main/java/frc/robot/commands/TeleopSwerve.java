@@ -15,13 +15,13 @@ import frc.robot.subsystems.Glitter;
 import frc.robot.subsystems.SwerveDrive;
 
 public class TeleopSwerve extends Command {
-    private SwerveDrive swerve;
-    private Glitter glitter;
-    private DoubleSupplier drive;
-    private DoubleSupplier strafe;
-    private DoubleSupplier turn;
-    private BooleanSupplier povSwitch;
-    private BooleanSupplier slow;
+    private final SwerveDrive swerve;
+    private final Glitter glitter;
+    private final DoubleSupplier drive;
+    private final DoubleSupplier strafe;
+    private final DoubleSupplier turn;
+    private final BooleanSupplier povSwitch;
+    private final BooleanSupplier slow;
 
     private boolean fieldRelative = false;
 

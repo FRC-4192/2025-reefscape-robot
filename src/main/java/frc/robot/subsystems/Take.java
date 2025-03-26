@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.util.ExponentialLowPassFilter;
 
 public class Take extends SubsystemBase {
-    private SparkFlex take;
+    private final SparkFlex take;
     private double originalCurrent;
     private double filteredCurrent;
 
@@ -59,7 +59,7 @@ public class Take extends SubsystemBase {
             () -> {},
             () -> {
                 runTakeRaw(-power);
-                spike= (!spike) ? filteredCurrent >= 50: true;
+                spike= spike || filteredCurrent >= 50;
             },
             (x) -> runTakeRaw(0),
             () -> filteredCurrent<=45&&spike,
