@@ -5,10 +5,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.LimelightHelpers;
 import frc.robot.Constants.LimelightConstants;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveDrive;
 
 public class TargetAlign extends Command {
@@ -62,9 +60,9 @@ public class TargetAlign extends Command {
             double translationTarget = -strafeController.calculate(pose.getX(), .5 * (rightSide ? -reefSeparation : reefSeparation));
             double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2);
             swerve.drive(new ChassisSpeeds(
-                forwardTarget,
-                translationTarget,
-                rotationTarget
+                forward ? forwardTarget : 0,
+                strafe ? translationTarget : 0,
+                turn ? rotationTarget : 0
             ));
         }
         SmartDashboard.putNumber("Vision Angle", Math.toDegrees(pose.getRotation().getX()));

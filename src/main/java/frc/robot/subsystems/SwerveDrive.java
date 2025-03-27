@@ -1,26 +1,21 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.LimelightHelpers;
 import frc.robot.Constants;
 import frc.robot.Constants.LimelightConstants;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.studica.frc.AHRS;
-import com.studica.frc.AHRS.NavXComType;
 
 import static frc.robot.Constants.SwerveConstants;
 
@@ -67,7 +62,7 @@ public class SwerveDrive extends SubsystemBase {
             this::getPose,
             this::setPose,
             this::getCurrentVelocity,
-            (speeds) -> driveAuto(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+            this::driveAuto, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             SwerveConstants.autoFollowerController,
             SwerveConstants.autoPathFollowerConfig,
             () -> {
