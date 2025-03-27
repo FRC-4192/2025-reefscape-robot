@@ -1,26 +1,24 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Glitter extends SubsystemBase {
-    private PWM led;
+    private final PWM led;
 
     private int lastLed = 1065;
-    private boolean ready;
+    private final boolean ready;
 
     private State state = State.INTAKENOTREADY;
 
-    public static enum State{
+    public enum State{
         FIELDCENTRIC(1905),
         ROBOTCENTRIC(1785),
         INTAKEREADY(1885),
         INTAKENOTREADY(1005);
         private final int ledNum;
-        private State(int num) {
+        State(int num) {
             this.ledNum = num;
         }
 

@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
+    public static Robot robotInstance = null;
+
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
@@ -23,6 +25,8 @@ public class Robot extends TimedRobot {
      * initialization code.
      */
     public Robot() {
+        super(Constants.period);
+        robotInstance = this;
         // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
         // autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();

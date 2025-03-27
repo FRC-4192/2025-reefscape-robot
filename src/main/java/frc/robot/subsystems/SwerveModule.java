@@ -17,13 +17,11 @@ import static frc.robot.Constants.SwerveConstants;
 
 
 public class SwerveModule {
-    private TalonFX driveMotor;
-    private TalonFX steerMotor;
-    private CANcoder    absoluteEncoder;
-    // private RelativeEncoder driveEncoder;
-    // private RelativeEncoder steerEncoder;
+    private final TalonFX driveMotor;
+    private final TalonFX steerMotor;
+    private final CANcoder    absoluteEncoder;
 
-    private Rotation2d angleOffset;
+    private final Rotation2d angleOffset;
 
     /* drive motor control requests */
     private final DutyCycleOut driveDutyCycle = new DutyCycleOut(0);

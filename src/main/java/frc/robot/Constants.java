@@ -6,10 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 
-import java.io.IOException;
-
-import org.json.simple.parser.ParseException;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -21,9 +17,10 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -42,6 +39,8 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+    public static final double period = .020; // seconds
+
     public static final class OperatorConstants {
         public static final int controllerPort = 1;
         public static final double stickDeadband = .02;
@@ -50,6 +49,7 @@ public final class Constants {
     public static final class DriverConstants {
         public static final int controllerPort = 0;
         public static final double stickDeadband = .01;
+
         public static final double swerveMaxTransSpeed = 0.50;
         public static final double swerveMaxTurnSpeed = 0.50;
         public static final double swerveSlowSpeed = 0.25;
@@ -57,15 +57,15 @@ public final class Constants {
 
     public static final class LimelightConstants {
         public static final String name = "limelight";
-        
     }
 
-    // public static final class ElevatorConstants {
-    //     public static final int[] motorIDs = new int[] {-1, -1};
+    public static final class IntakeConstants {
+        public static final SparkBaseConfig motorConfig = new SparkFlexConfig()
+                .idleMode(SparkBaseConfig.IdleMode.kCoast)
+                .inverted(false)
+                .smartCurrentLimit(60, 50);
+    }
 
-    //     public static final PIDController pidConroller = new PIDController(0, 0, 0);
-    //     public static final ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12, 0.25, 0, 0);
-    // }
     public static final class ElevatorConstants {
         public static final TalonFXConfiguration elevatorConfig = new TalonFXConfiguration()
             .withCurrentLimits(new CurrentLimitsConfigs()
@@ -74,12 +74,8 @@ public final class Constants {
             .withMotorOutput(new MotorOutputConfigs()
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
-        // public static final TalonFXConfiguration elevatorConfig2 = elevatorConfig.withMotorOutput(
-        //     elevatorConfig.MotorOutput.withInverted(InvertedValue.CounterClockwise_Positive)
-        // );
-        
+
         public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12,0.33,0, 0);
-        
     }
 
     public static final class ArmConstants {
@@ -91,7 +87,7 @@ public final class Constants {
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
-        public static Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
         
         public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.08, 0, 0);
     }
@@ -207,10 +203,10 @@ public final class Constants {
             // }
 
 
-            /** Swerve CANCoder Configuration */
+            /* Swerve CANCoder Configuration */
             swerveCANcoderConfig.MagnetSensor.SensorDirection = swerveType.cancoderInvert;
 
-            /** Swerve Angle Motor Configurations */
+            /* Swerve Angle Motor Configurations */
             /* Motor Inverts and Neutral Mode */
             swerveSteerFXConfig.MotorOutput.Inverted = swerveType.angleMotorInvert;
             swerveSteerFXConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -230,7 +226,7 @@ public final class Constants {
             swerveSteerFXConfig.Slot0.kI = swerveType.angleKI;
             swerveSteerFXConfig.Slot0.kD = swerveType.angleKD;
 
-            /** Swerve Drive Motor Configuration */
+            /* Swerve Drive Motor Configuration */
             /* Motor Inverts and Neutral Mode */
             swerveDriveFXConfig.MotorOutput.Inverted = swerveType.driveMotorInvert;
             swerveDriveFXConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;

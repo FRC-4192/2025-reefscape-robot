@@ -20,12 +20,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Take5 extends SubsystemBase {
-    private SparkFlex take;
-    private KalmanFilter<N1, N1, N1> kalmanFilter;
+    private final SparkFlex take;
+    private final KalmanFilter<N1, N1, N1> kalmanFilter;
     
-    private Matrix<N1, N1> stateStdDevs = new Matrix<>(Nat.N1(), Nat.N1());
-    private Matrix<N1, N1> measurementStdDevs = new Matrix<>(Nat.N1(), Nat.N1());
-    private double dtSeconds = 1.0 / 50.0;  
+    private final Matrix<N1, N1> stateStdDevs = new Matrix<>(Nat.N1(), Nat.N1());
+    private final Matrix<N1, N1> measurementStdDevs = new Matrix<>(Nat.N1(), Nat.N1());
+    private final double dtSeconds = 1.0 / 50.0;
 
     public Take5() {
         take = new SparkFlex(16, MotorType.kBrushless);

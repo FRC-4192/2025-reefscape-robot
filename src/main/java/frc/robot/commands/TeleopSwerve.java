@@ -1,8 +1,5 @@
 package frc.robot.commands;
 
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,14 +11,18 @@ import frc.robot.Constants.DriverConstants;
 import frc.robot.subsystems.Glitter;
 import frc.robot.subsystems.SwerveDrive;
 
+import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+
+@SuppressWarnings("unused")
 public class TeleopSwerve extends Command {
-    private SwerveDrive swerve;
-    private Glitter glitter;
-    private DoubleSupplier drive;
-    private DoubleSupplier strafe;
-    private DoubleSupplier turn;
-    private BooleanSupplier povSwitch;
-    private BooleanSupplier slow;
+    private final SwerveDrive swerve;
+    private final Glitter glitter;
+    private final DoubleSupplier drive;
+    private final DoubleSupplier strafe;
+    private final DoubleSupplier turn;
+    private final BooleanSupplier povSwitch;
+    private final BooleanSupplier slow;
 
     private boolean fieldRelative = false;
 
@@ -41,14 +42,6 @@ public class TeleopSwerve extends Command {
         this.slow = slow;
         
         addRequirements(swerve);
-    }
-
-    @Override
-    public void initialize() {
-    }
-
-    @Override
-    public void end(boolean interrupted) {
     }
 
     @Override

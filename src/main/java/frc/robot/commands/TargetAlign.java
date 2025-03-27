@@ -5,27 +5,25 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.lib.LimelightHelpers;
 import frc.robot.Constants.LimelightConstants;
-import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.SwerveDrive;
 
 public class TargetAlign extends Command {
-    private SwerveDrive swerve;
-    private boolean rightSide;
-    private boolean forward;
-    private boolean strafe;
-    private boolean turn;
+    private final SwerveDrive swerve;
+    private final boolean rightSide;
+    private final boolean forward;
+    private final boolean strafe;
+    private final boolean turn;
 
-    private PIDController forwardController = new PIDController(2.5, 0, 0.0001);
-    private PIDController strafeController = new PIDController(2.5, 0, 0.0001);
-    private PIDController rotationController = new PIDController(.06, 0, 0.0001);
-    private double kStatic = .16;
+    private final PIDController forwardController = new PIDController(2.5, 0, 0.0001);
+    private final PIDController strafeController = new PIDController(2.5, 0, 0.0001);
+    private final PIDController rotationController = new PIDController(.06, 0, 0.0001);
+    private final double kStatic = .16;
 
-    private static double bumperLength = .914;
-    private static double bumperWidth = .902;
-    private static double reefSeparation = .33;
+    private static final double bumperLength = .914;
+    private static final double bumperWidth = .902;
+    private static final double reefSeparation = .33;
         
     public TargetAlign(SwerveDrive swerve, boolean rightSide, boolean forward, boolean strafe, boolean turn) {
         this.swerve = swerve;
@@ -62,9 +60,9 @@ public class TargetAlign extends Command {
             double translationTarget = -strafeController.calculate(pose.getX(), .5 * (rightSide ? -reefSeparation : reefSeparation));
             double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2);
             swerve.drive(new ChassisSpeeds(
-                forwardTarget,
-                translationTarget,
-                rotationTarget
+                forward ? forwardTarget : 0,
+                strafe ? translationTarget : 0,
+                turn ? rotationTarget : 0
             ));
         }
         SmartDashboard.putNumber("Vision Angle", Math.toDegrees(pose.getRotation().getX()));
