@@ -139,7 +139,7 @@ public class Arm extends SubsystemBase {
 
 
     /**
-    * Returns a command that runs the elevator to the target using motion profiled PID.
+    * Returns a command that runs the arm to the target using motion profiled PID.
     */
     private Command runTo() {
         return new FunctionalCommand(

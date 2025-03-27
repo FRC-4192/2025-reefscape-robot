@@ -25,6 +25,7 @@ public class TeleopSwerve extends Command {
     private final BooleanSupplier slow;
 
     private boolean fieldRelative = false;
+//    private double maxSpeed = DriverConstants.swerveMaxTransSpeed;
 
     public TeleopSwerve(SwerveDrive swerve, Glitter glitter, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn) {
         this(swerve, glitter, drive, strafe, turn, () -> false, () -> false);

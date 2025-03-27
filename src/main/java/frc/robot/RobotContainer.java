@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,6 +18,8 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.TargetAlign;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.*;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -47,13 +50,28 @@ public class RobotContainer {
     public RobotContainer() {
         
         swerve.setDefaultCommand(new TeleopSwerve(
-            swerve,
-            glitter,
-            driver::getLeftY,
-            driver::getLeftX,
-            driver::getRightX,
-            driver::getStartButtonPressed,
-            () -> driver.getLeftStickButton() || driver.getRightStickButton() || (elevator.getState() != Elevator.State.L0 && !op.getBackButton())
+                swerve,
+                glitter,
+                driver::getLeftY,
+                driver::getLeftX,
+                driver::getRightX,
+                driver::getStartButtonPressed,
+                new BooleanSupplier() {
+                    // todo fix this shi to make it cleaner idk im too tired to deal with ts
+                    boolean driverSlow = false;
+
+                    @Override
+                    public boolean getAsBoolean() {
+                        boolean elevatorUp = elevator.getState() == Elevator.State.L0 || elevator.getState() == Elevator.State.L1;
+                        boolean ignoreElevator = op.getBackButton();
+
+                        if (driver.getLeftStickButton() || driver.getRightStickButton()) {
+                            driverSlow = !driverSlow;
+                        }
+
+                        return driverSlow || elevatorUp && !ignoreElevator;
+                    }
+                }
         ));
 
         elevator.setDefaultCommand(elevator.stay());
@@ -217,6 +235,9 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoChooser.getSelected();
+        return autoChooser.getSelected().finallyDo(() -> {
+            if (AutoBuilder.shouldFlip())
+                swerve.setHeading(FlippingUtil.flipFieldRotation(swerve.getHeading()));
+        });
     }
 }

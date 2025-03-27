@@ -159,15 +159,17 @@ public class SwerveDrive extends SubsystemBase {
         };
     }
 
-    private int k = 0;
+    private void setSwerveModuleStates(SwerveModuleState[] states, boolean isOpenLoop) {
+        for (int i = 0; i < 4; i ++) {
+            swerveModules[i].setState(states[i], isOpenLoop);
+        }
+    }
+
     public void driveAuto(ChassisSpeeds chassisSpeeds) {
         SwerveModuleState[] swerveModuleStates = SwerveConstants.kinematics.toSwerveModuleStates(chassisSpeeds);
-        SmartDashboard.putNumber("aut", ++k);
         SmartDashboard.putString("aut cs", chassisSpeeds.toString());
 
-        for(int i = 0; i < 4; i ++){
-            swerveModules[i].setState(swerveModuleStates[i], false);
-        }
+        setSwerveModuleStates(swerveModuleStates, false);
     }
     public void drive(ChassisSpeeds chassisSpeeds) {
         drive(chassisSpeeds, true);
@@ -177,9 +179,7 @@ public class SwerveDrive extends SubsystemBase {
         SwerveModuleState[] swerveModuleStates = SwerveConstants.kinematics.toSwerveModuleStates(chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
 
-        for(int i = 0; i < 4; i ++) {
-            swerveModules[i].setState(swerveModuleStates[i], isOpenLoop);
-        }
+        setSwerveModuleStates(swerveModuleStates, isOpenLoop);
     }
 
     public void drive(Pose2d target, boolean fieldRelative, boolean isOpenLoop) {
@@ -188,6 +188,15 @@ public class SwerveDrive extends SubsystemBase {
                 : new ChassisSpeeds(target.getX(), target.getY(), target.getRotation().getRadians()),
             isOpenLoop
         );
+    }
+
+    public void lockDrive() {
+        setSwerveModuleStates(new SwerveModuleState[] {
+                new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
+                new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+                new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+                new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
+        }, false);
     }
     
     
