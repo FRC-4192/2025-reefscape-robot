@@ -35,9 +35,10 @@ public class Arm extends SubsystemBase {
     private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        INTAKING(-60),
+        INTAKING(-72),
         HOLDING(110),
-        SCORING(90 - 32.211),
+        // SCORING(90 - 32.211),
+        SCORING(99),
         EJECTING(-80), // L1 scoring or throwing away unwanted coral
         ALGAE(-55);
 
@@ -59,7 +60,8 @@ public class Arm extends SubsystemBase {
         motor = new TalonFX(9);
         motor.getConfigurator().apply(ArmConstants.wristConfig);
 
-        controller.setTolerance(.03);
+        controller.setTolerance(.015);
+        simpleController.setTolerance(.01);
 
         sysIdRoutine = new SysIdRoutine(
             new SysIdRoutine.Config(),
@@ -86,7 +88,7 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isSafeToLift() {
-        return getState() == State.HOLDING;
+        return getState() == State.HOLDING || getState() == State.SCORING;
     }
 
     public Angle getPosition() {
@@ -122,6 +124,10 @@ public class Arm extends SubsystemBase {
     }
     public Command rezero() {
         return rezero(() -> .075);
+    }
+
+    public Angle getError() {
+        return getState().angle.minus(getPosition());
     }
 
 

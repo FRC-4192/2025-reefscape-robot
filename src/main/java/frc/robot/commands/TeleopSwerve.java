@@ -24,7 +24,8 @@ public class TeleopSwerve extends Command {
     private final BooleanSupplier povSwitch;
     private final BooleanSupplier slow;
 
-    private boolean fieldRelative = false;
+    private boolean fieldRelative = true;
+    private boolean slowMode = false;
 //    private double maxSpeed = DriverConstants.swerveMaxTransSpeed;
 
     public TeleopSwerve(SwerveDrive swerve, Glitter glitter, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn) {
@@ -45,6 +46,10 @@ public class TeleopSwerve extends Command {
         addRequirements(swerve);
     }
 
+    public void toggleSlow() {
+        slowMode = !slowMode;
+    }
+
     @Override
     public void execute() {
         if (povSwitch.getAsBoolean()) {
@@ -58,8 +63,8 @@ public class TeleopSwerve extends Command {
 
         swerve.drive(
             new Pose2d(
-                new Translation2d(fieldRelative ? translationVal : -translationVal, fieldRelative ? strafeVal : -strafeVal).times(Constants.SwerveConstants.maxSpeed * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed)),
-                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed))
+                new Translation2d(fieldRelative ? translationVal : -translationVal, fieldRelative ? strafeVal : -strafeVal).times(Constants.SwerveConstants.maxSpeed * (slowMode ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed)),
+                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (slowMode ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed))
             ),
             fieldRelative,
             true

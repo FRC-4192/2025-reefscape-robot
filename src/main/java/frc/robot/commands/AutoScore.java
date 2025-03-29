@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -17,6 +19,8 @@ public class AutoScore extends Command {
     private final Command scoreCoral;
     private final TargetAlign align;
 
+    public int state = 0;
+    private Timer timer = new Timer();
 
     public AutoScore(TargetAlign align, Elevator elevator, Arm arm, Take take) {
         this.align = align;
@@ -33,11 +37,10 @@ public class AutoScore extends Command {
             elevator.setTargetStay(Elevator.State.L0)
         );
 
-
-        for (Subsystem s : new Subsystem[] {elevator, arm, take}) {
-            if (s != null)
-                addRequirements(s);
-        }
+        // for (Subsystem s : new Subsystem[] {elevator, arm, take}) {
+        //     if (s != null)
+        //         addRequirements(s);
+        // }
     }
     // public AutoScore(TargetAlign align) {
     //     this(align, null, null, null);
@@ -45,25 +48,42 @@ public class AutoScore extends Command {
 
     @Override
     public void initialize() {
-        align.initialize();
+        state = 0;
+        if (align != null)
+            align.schedule();
+        if (elevator != null)
+            elevator.setTargetStay(Elevator.State.L4).schedule();
+        if (arm != null)
+            arm.setTargetStay(Arm.State.HOLDING).schedule();;
     }
 
     @Override
     public boolean isFinished() {
-        return scoreCoral.isFinished();
+        return state == 4 && Math.abs(elevator.getError().in(Units.Meters)) < .1;
     }
 
     @Override
     public void end(boolean interrupted) {
-        scoreCoral.end(interrupted);
+        // scoreCoral.end(interrupted);
     }
+
     @Override
     public void execute() {
-        align.execute();
-        prepScore.execute();
-        if (elevator.getError()<.05){
-
+        if (state == 0 && align.isFinished() && Math.abs(elevator.getError().in(Units.Meters)) < .05) {
+            arm.setTargetOnly(Arm.State.SCORING).schedule();
+            state++;
+        } else if (state == 1 && Math.abs(arm.getError().in(Units.Degrees)) < 10) {
+            take.runOuttake(() -> 1).schedule();
+            state++;
+            timer.reset();
+        } else if (state == 2 && timer.hasElapsed(0.5)) {
+            arm.setTargetStay(Arm.State.HOLDING).schedule();
+            state++;
+            timer.reset();
+        } else if (state == 3 && Math.abs(arm.getError().in(Units.Degrees)) < 30) {
+            take.runTakeOnce(0).schedule();
+            elevator.setTargetOnly(Elevator.State.L0).schedule();
+            state++;
         }
- 
     }
 }

@@ -33,7 +33,7 @@ public class TargetAlign extends Command {
         this.turn = turn;
 
         forwardController.setTolerance(0.02, 0.05);
-        strafeController.setTolerance(0.02, 0.05);
+        strafeController.setTolerance(0.01, 0.05);
         rotationController.setTolerance(0.8, 2);
 
         addRequirements(swerve);
@@ -68,6 +68,9 @@ public class TargetAlign extends Command {
         SmartDashboard.putNumber("Vision Angle", Math.toDegrees(pose.getRotation().getX()));
         SmartDashboard.putNumber("Vision Offset", pose.getX());
         SmartDashboard.putNumber("Vision Dist", pose.getTranslation().getNorm());
+        SmartDashboard.putNumber("Tag X error", forwardController.getError());
+        SmartDashboard.putNumber("Tag Y error", strafeController.getError());
+        SmartDashboard.putNumber("Tag R error", rotationController.getError());
     }
 
     @Override
