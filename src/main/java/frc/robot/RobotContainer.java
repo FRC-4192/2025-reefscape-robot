@@ -48,31 +48,17 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        
-        swerve.setDefaultCommand(new TeleopSwerve(
-                swerve,
-                glitter,
-                driver::getLeftY,
-                driver::getLeftX,
-                driver::getRightX,
-                driver::getStartButtonPressed,
-                new BooleanSupplier() {
-                    // todo fix this shi to make it cleaner idk im too tired to deal with ts
-                    boolean driverSlow = false;
-
-                    @Override
-                    public boolean getAsBoolean() {
-                        boolean elevatorUp = elevator.getState() == Elevator.State.L0 || elevator.getState() == Elevator.State.L1;
-                        boolean ignoreElevator = op.getBackButton();
-
-                        if (driver.getLeftStickButton() || driver.getRightStickButton()) {
-                            driverSlow = !driverSlow;
-                        }
-
-                        return driverSlow || elevatorUp && !ignoreElevator;
-                    }
-                }
-        ));
+        TeleopSwerve teleopSwerve = new TeleopSwerve(
+            swerve,
+            glitter,
+            driver::getLeftY,
+            driver::getLeftX,
+            driver::getRightX,
+            driver::getStartButtonPressed,
+            null
+        );
+        driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(teleopSwerve::toggleSlow));
+        swerve.setDefaultCommand(teleopSwerve);
 
         elevator.setDefaultCommand(elevator.stay());
         arm.setDefaultCommand(arm.stayPID());
@@ -174,30 +160,32 @@ public class RobotContainer {
         //     () -> driverC.setRumble(RumbleType.kBothRumble, .5),
         //     () -> driverC.setRumble(RumbleType.kBothRumble, 0)
         // ).until(() -> arm.getState() == Arm.State.SCORING);
-        driverC.leftBumper().whileTrue(new TargetAlign(swerve, false));
-        driverC.rightBumper().whileTrue(new TargetAlign(swerve, true));
+        boolean testing = false;
+
+        driverC.leftBumper().whileTrue(testing ? new TargetAlign(swerve, false, false, false, false) : new TargetAlign(swerve, false));
+        driverC.rightBumper().whileTrue(testing ? new TargetAlign(swerve, true, false, false, false) : new TargetAlign(swerve, true));
 
         driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
 
         operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift()||elevator.getState()==Elevator.State.L1).onTrue(elevator.setTargetOnly(Elevator.State.L0));
         driverC.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L1));
         
-        new Trigger(() -> (driver.getLeftX()!=0
-            ||driver.getLeftY()!=0
-            ||driver.getRightX()!=0)
-            &&(elevator.getState()==Elevator.State.L1||elevator.getState()==Elevator.State.L0)
-        )
-            .onTrue(elevator.setTargetOnly(Elevator.State.L0))
-            .onFalse(elevator.setTargetOnly(Elevator.State.L1));
+        // new Trigger(() -> (driver.getLeftX()!=0
+        //     ||driver.getLeftY()!=0
+        //     ||driver.getRightX()!=0)
+        //     &&(elevator.getState()==Elevator.State.L1||elevator.getState()==Elevator.State.L0)
+        // )
+        //     .onTrue(elevator.setTargetOnly(Elevator.State.L0))
+        //     .onFalse(elevator.setTargetOnly(Elevator.State.L1));
         
 
-        operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L3));
-        operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4));
+        operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L3)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
+        operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
 
 
-        operator.a().or(driver::getAButton).and(elevator::isSafeToIntake).onTrue(arm.setTargetStay(Arm.State.INTAKING));
-        operator.b().or(driver::getBButton).onTrue(arm.setTargetStay(Arm.State.SCORING));
-        operator.x().or(driver::getXButton).onTrue(arm.setTargetStay(Arm.State.HOLDING));
+        operator.a().or(driver::getAButton).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
+        operator.b().or(driver::getBButton).onTrue(arm.setTargetOnly(Arm.State.SCORING));
+        operator.x().or(driver::getXButton).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
         operator.rightBumper().onTrue(take.intakeCoral(.5)/*.raceWith(rampTake.runIntake(() -> .3))*/);
         operator.leftBumper().onTrue(take.outtakeCoral(.5));
 

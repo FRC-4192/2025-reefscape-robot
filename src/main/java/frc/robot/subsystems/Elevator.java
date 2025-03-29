@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.Constants.ElevatorConstants;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -30,11 +31,13 @@ public class Elevator extends SubsystemBase {
 
     private State state = State.L0;
 
+    private MutDistance offsetOffset = Units.Meters.zero().mutableCopy();
+
     public enum State {
         L0(0.00),
         L1(0.05),
         L2(0.5),
-        L3(0.22),
+        L3(0.18),
         L4(0.75);
 
         private final Distance position;
@@ -75,6 +78,7 @@ public class Elevator extends SubsystemBase {
             )
         );
 
+        rezero();
         setDefaultCommand(stay());
     }
 
@@ -87,7 +91,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Distance getPosition() {
-        return motorToHeight((motor.getPosition().getValueAsDouble() + motor2.getPosition().getValueAsDouble()) * .5);
+        return motorToHeight((motor.getPosition().getValueAsDouble() + motor2.getPosition().getValueAsDouble()) * .5).plus(offsetOffset);
     }
     public LinearVelocity getVelocity() {
         return motorToHeight((motor.getVelocity().getValueAsDouble() + motor2.getVelocity().getValueAsDouble()) * .5).div(Units.Second.one());
@@ -109,8 +113,15 @@ public class Elevator extends SubsystemBase {
         return runBasic(() -> startPosition.mut_plus(metersPerSecond.getAsDouble() * Constants.period, Units.Meters));
     }
 
-    public double getError() {
-        return getState().meters() - getPosition().in(Units.Meters);
+    public void rezero() {
+        offsetOffset.mut_minus(getPosition());
+    }
+    public Command rezeroCommand() {
+        return runOnce(this::rezero);
+    }
+
+    public Distance getError() {
+        return getState().position.minus(getPosition());
     }
 
 
