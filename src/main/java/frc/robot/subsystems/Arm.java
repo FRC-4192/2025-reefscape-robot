@@ -154,7 +154,7 @@ public class Arm extends SubsystemBase {
                 controller.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians) + adjust)
                     + feedforward(getPosition(), controller.getSetpoint().velocity)
             ),
-            (interrupted) -> motor.set(interrupted ? 0 : feedforward(getPosition(), 0)),
+            (interrupted) -> motor.set(interrupted ? motor.get() : feedforward(getPosition(), 0)),
             controller::atGoal,
             this
         );

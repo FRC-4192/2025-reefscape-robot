@@ -41,19 +41,19 @@ public class Glitter extends SubsystemBase {
         return state;
     }
 
-    public Command setState(State state) {
-        return runOnce(() -> this.state = state);
+    public void setState(State state) {
+        this.state = state;
     }
 
     public boolean isFieldCentric() {
-        return state == State.FIELD_CENTRIC || state == State.FIELD_SPEED;
+        return getState() == State.FIELD_CENTRIC || getState() == State.FIELD_SPEED;
     }
     public boolean isSpeed() {
-        return state == State.FIELD_SPEED || state == State.ROBOT_SPEED;
+        return getState() == State.FIELD_SPEED || getState() == State.ROBOT_SPEED;
     }
 
-    public Command toggleDrivePov() {
-        return switch (getState()) {
+    public void toggleDrivePov() {
+        switch (getState()) {
             case FIELD_CENTRIC -> setState(State.ROBOT_CENTRIC);
             case ROBOT_CENTRIC -> setState(State.FIELD_CENTRIC);
             case FIELD_SPEED -> setState(State.ROBOT_SPEED);
@@ -62,8 +62,8 @@ public class Glitter extends SubsystemBase {
         };
     }
 
-    public Command toggleDriveSpeed() {
-        return switch (getState()) {
+    public void toggleDriveSpeed() {
+        switch (getState()) {
             case FIELD_CENTRIC -> setState(State.FIELD_SPEED);
             case ROBOT_CENTRIC -> setState(State.ROBOT_SPEED);
             case FIELD_SPEED -> setState(State.FIELD_CENTRIC);

@@ -43,21 +43,21 @@ public class Take extends SubsystemBase {
             () -> {},
             () -> {
                 runRaw(-power);
-                spike= spike || filteredCurrent >= 50;
+                spike = spike || filteredCurrent >= 50;
             },
             (x) -> runRaw(0),
-            () -> filteredCurrent<=45&&spike,
+            () -> filteredCurrent <= 45 && spike,
             this
         );
     }
-    public Command intakeCoral(double power){
+    public Command intakeCoral(DoubleSupplier power) {
         return new FunctionalCommand(
             () -> {},
             () -> {
-                runRaw(power);
+                runRaw(power.getAsDouble());
             },
-            (x) -> runRaw(x ? power : 0),
-            () -> filteredCurrent>=57,
+            (x) -> runRaw(x ? power.getAsDouble() : 0),
+            () -> filteredCurrent >= 45,
             this
         );
     }

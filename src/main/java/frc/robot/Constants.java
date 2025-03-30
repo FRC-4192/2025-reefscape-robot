@@ -56,7 +56,7 @@ public final class Constants {
         public static final double swerveMaxTurnSpeed = 0.50;
         public static final double swerveSlowSpeed = 0.20;
 
-        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(1.0, 1.0);
+        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(25.0, 100.0);
     }
 
     public static final class LimelightConstants {
@@ -67,7 +67,7 @@ public final class Constants {
         public static final SparkBaseConfig motorConfig = new SparkFlexConfig()
                 .idleMode(SparkBaseConfig.IdleMode.kCoast)
                 .inverted(false)
-                .smartCurrentLimit(60, 50);
+                .smartCurrentLimit(50, 30);
     }
 
     public static final class ElevatorConstants {
@@ -93,7 +93,7 @@ public final class Constants {
 
         public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
         
-        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.12, 0, 0);
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.141, 0, 0);
     }
 
     public static final class SwerveConstants {
@@ -221,8 +221,8 @@ public final class Constants {
             
             /* Current Limiting */
             swerveSteerFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 30;
-            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLimit = 40;
+            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 20;
+            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLimit = 25;
             swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
             /* PID Config */
@@ -240,8 +240,8 @@ public final class Constants {
 
             /* Current Limiting */
             swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable =true;
-            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimit = 60;
-            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
+            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 30;
+            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimit = 40;
             swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
             /* PID Config */

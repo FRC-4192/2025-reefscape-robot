@@ -26,7 +26,7 @@ public class Elevator extends SubsystemBase {
     private final TalonFX motor, motor2;
 
     private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2.5, 4);
-    private final ProfiledPIDController controller = new ProfiledPIDController(2.5, 0, 0.0001, constraints);
+    private final ProfiledPIDController controller = new ProfiledPIDController(2.0, 0, 0.0001, constraints);
     private final PIDController basicController = new PIDController(0.1, 0, 0);
 
     private State state = State.L0;

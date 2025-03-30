@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -30,6 +31,7 @@ public class TeleopSwerve extends Command {
 
     private final JerkFilter tipFilterX = new JerkFilter(DriverConstants.tipConstraints);
     private final JerkFilter tipFilterY = new JerkFilter(DriverConstants.tipConstraints);
+    private final SlewRateLimiter limiter = new SlewRateLimiter(10, -20, 0);
 
     public TeleopSwerve(SwerveDrive swerve, DoubleSupplier drive, DoubleSupplier strafe, DoubleSupplier turn) {
         this(swerve, drive, strafe, turn, () -> true, () -> false);
@@ -74,5 +76,6 @@ public class TeleopSwerve extends Command {
         );
 
         SmartDashboard.putBoolean("Field Centric", isFieldCentric.getAsBoolean());
+        SmartDashboard.putNumberArray("DriverX", new double[] {-drive.getAsDouble(), translationVal});
     }
 }

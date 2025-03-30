@@ -59,7 +59,7 @@ public class RobotContainer {
         swerve.setDefaultCommand(teleopSwerve);
 
         elevator.setDefaultCommand(elevator.stay());
-        arm.setDefaultCommand(arm.stayPID());
+        arm.setDefaultCommand(arm.stay());
 
         take.setDefaultCommand(take.runIntake(
                 () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
@@ -102,7 +102,7 @@ public class RobotContainer {
             useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.5)).asProxy() : new InstantCommand(),
             useIntake ? take.runTakeOnce(0).raceWith(Commands.waitSeconds(.01)).asProxy() : new InstantCommand()
         ));
-        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(.5)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
+        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(() -> .5)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
         NamedCommands.registerCommand("intake idle", /*useIntake ? rampTake.runIntake(() -> -.075).asProxy() :*/ new InstantCommand());
         NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(1.5)) : new InstantCommand());
         NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(1.5)) : new InstantCommand());
@@ -151,8 +151,8 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
-        driverC.start().onTrue(glitter.toggleDrivePov());
-        driverC.leftStick().or(driverC.rightStick()).onTrue(glitter.toggleDriveSpeed());
+        driverC.start().onTrue(Commands.runOnce(glitter::toggleDrivePov));
+        driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
 
         driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
 
@@ -170,7 +170,7 @@ public class RobotContainer {
 
         driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
 
-        operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift()||elevator.getState()==Elevator.State.L1).onTrue(elevator.setTargetOnly(Elevator.State.L0));
+        operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift() || elevator.getState() == Elevator.State.L1).onTrue(elevator.setTargetOnly(Elevator.State.L0));
         driverC.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L1));
         
         // new Trigger(() -> (driver.getLeftX()!=0
@@ -185,12 +185,12 @@ public class RobotContainer {
         operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L3)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
         operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
 
-
         operator.a().or(driver::getAButton).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
         operator.b().or(driver::getBButton).onTrue(arm.setTargetOnly(Arm.State.SCORING));
         operator.x().or(driver::getXButton).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
-        operator.rightBumper().onTrue(take.intakeCoral(.5)/*.raceWith(rampTake.runIntake(() -> .3))*/);
-        operator.leftBumper().onTrue(take.outtakeCoral(.5));
+
+        operator.rightBumper().whileTrue(take.intakeCoral(() -> .7).andThen(Commands.runOnce(() -> arm.setTargetOnly(Arm.State.HOLDING).schedule())));
+        operator.leftBumper().whileTrue(take.outtakeCoral(.5));
 
         operator.leftStick().whileTrue(arm.rezero());
         operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
