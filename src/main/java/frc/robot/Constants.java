@@ -26,6 +26,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import frc.lib.util.COTSTalonFXSwerveConstants;
@@ -40,6 +41,7 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
  */
 public final class Constants {
     public static final double period = .020; // seconds
+    public static final double brownoutVoltage = 6.0;
 
     public static final class OperatorConstants {
         public static final int controllerPort = 1;
@@ -53,6 +55,8 @@ public final class Constants {
         public static final double swerveMaxTransSpeed = 0.50;
         public static final double swerveMaxTurnSpeed = 0.50;
         public static final double swerveSlowSpeed = 0.20;
+
+        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(1.0, 1.0);
     }
 
     public static final class LimelightConstants {

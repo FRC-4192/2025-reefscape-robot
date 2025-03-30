@@ -50,14 +50,12 @@ public class RobotContainer {
     public RobotContainer() {
         TeleopSwerve teleopSwerve = new TeleopSwerve(
             swerve,
-            glitter,
             driver::getLeftY,
             driver::getLeftX,
             driver::getRightX,
-            driver::getStartButtonPressed,
-            null
+            glitter::isFieldCentric,
+            glitter::isSpeed
         );
-        driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(teleopSwerve::toggleSlow));
         swerve.setDefaultCommand(teleopSwerve);
 
         elevator.setDefaultCommand(elevator.stay());
@@ -153,6 +151,11 @@ public class RobotContainer {
      * joysticks}.
      */
     private void configureBindings() {
+        driverC.start().onTrue(glitter.toggleDrivePov());
+        driverC.leftStick().or(driverC.rightStick()).onTrue(glitter.toggleDriveSpeed());
+
+        driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
+
         // operator.povLeft().whileTrue(new TargetAlign(swerve));
         // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
         // new Trigger(() -> driver.getPOV() == 90).whileTrue(new TargetAlign(swerve, true));
