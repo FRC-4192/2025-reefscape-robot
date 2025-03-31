@@ -25,9 +25,9 @@ import static frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase {
     private final TalonFX motor, motor2;
 
-    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2.5, 4);
-    private final ProfiledPIDController controller = new ProfiledPIDController(2.0, 0, 0.0001, constraints);
-    private final PIDController basicController = new PIDController(0.1, 0, 0);
+    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(1.5, 3.0);
+    private final ProfiledPIDController controller = new ProfiledPIDController(2.0, 0, 0.01, constraints);
+    private final PIDController basicController = new PIDController(1.0, 0, 0);
 
     private State state = State.L0;
 
@@ -62,7 +62,8 @@ public class Elevator extends SubsystemBase {
         motor2.getConfigurator().apply(ElevatorConstants.elevatorConfig);
         motor2.setControl(new Follower(motor.getDeviceID(), true));
 
-        controller.setTolerance(0.011, .01);
+        controller.setTolerance(0.005, .01);
+        controller.reset(getPosition().in(Units.Meters), getVelocity().in(Units.MetersPerSecond));
         basicController.setTolerance(0.02);
 
         sysIdRoutine = new SysIdRoutine(
@@ -146,7 +147,7 @@ public class Elevator extends SubsystemBase {
     */
     private Command runTo() {
         return new FunctionalCommand(
-            () -> controller.reset(getPosition().in(Units.Meters), getVelocity().in(Units.MetersPerSecond)),
+            () -> controller.reset(controller.getSetpoint()),
             () -> motor.set(
                 controller.calculate(getPosition().in(Units.Meters), getState().meters())
                     + feedforward(controller.getSetpoint().velocity)

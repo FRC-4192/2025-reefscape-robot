@@ -7,6 +7,8 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.FlippingUtil;
+
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.AutoScore;
 import frc.robot.commands.TargetAlign;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.*;
@@ -54,12 +57,12 @@ public class RobotContainer {
             driver::getLeftX,
             driver::getRightX,
             glitter::isFieldCentric,
-            glitter::isSpeed
+            () -> glitter.isSpeed() || elevator.getPosition().in(Units.Meters) > .5
         );
         swerve.setDefaultCommand(teleopSwerve);
 
-        elevator.setDefaultCommand(elevator.stay());
-        arm.setDefaultCommand(arm.stay());
+        elevator.setDefaultCommand(elevator.stayPID());
+        arm.setDefaultCommand(arm.stayPID());
 
         take.setDefaultCommand(take.runIntake(
                 () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
@@ -102,7 +105,7 @@ public class RobotContainer {
             useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.5)).asProxy() : new InstantCommand(),
             useIntake ? take.runTakeOnce(0).raceWith(Commands.waitSeconds(.01)).asProxy() : new InstantCommand()
         ));
-        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(() -> .5)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
+        NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(() -> .6)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
         NamedCommands.registerCommand("intake idle", /*useIntake ? rampTake.runIntake(() -> -.075).asProxy() :*/ new InstantCommand());
         NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(1.5)) : new InstantCommand());
         NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(1.5)) : new InstantCommand());
@@ -155,6 +158,7 @@ public class RobotContainer {
         driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
 
         driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
+        driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
 
         // operator.povLeft().whileTrue(new TargetAlign(swerve));
         // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
@@ -194,6 +198,19 @@ public class RobotContainer {
 
         operator.leftStick().whileTrue(arm.rezero());
         operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
+
+        operator.back().onTrue(new AutoScore(
+            new TargetAlign(swerve, false),
+            elevator,
+            arm,
+            take
+        ));
+        operator.start().onTrue(new AutoScore(
+            new TargetAlign(swerve, true),
+            elevator,
+            arm,
+            take
+        ));
 
         // led testing
         // operator.leftBumper().onTrue(glitter.dereasePWM()

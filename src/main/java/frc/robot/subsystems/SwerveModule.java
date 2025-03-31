@@ -5,6 +5,8 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -81,6 +83,10 @@ public class SwerveModule {
     public void resetToAbsolute() {
         double absolutePosition = getAbsoluteAngle().minus(angleOffset).getRotations(); //todo not sure if we should flip it yet
         steerMotor.setPosition(absolutePosition);
+    }
+
+    public void setBrake(boolean brakedMode) {
+        steerMotor.getConfigurator().apply(SwerveConstants.swerveDriveFXConfig.MotorOutput.withNeutralMode(brakedMode ? NeutralModeValue.Brake : NeutralModeValue.Coast));
     }
     
     /**

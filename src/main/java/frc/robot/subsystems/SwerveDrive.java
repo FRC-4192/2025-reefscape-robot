@@ -30,6 +30,8 @@ public class SwerveDrive extends SubsystemBase {
 
     public Field2d fieldO = new Field2d();
     public Field2d fieldV = new Field2d();
+
+    private boolean braked = false;
     
     // Constructor
     public SwerveDrive() {
@@ -198,6 +200,12 @@ public class SwerveDrive extends SubsystemBase {
                 new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
         }, false);
     }
+
+    public void toggleBrakes() {
+        braked = !braked;
+        for (SwerveModule module : swerveModules)
+            module.setBrake(braked);
+    }
     
     
     @Override
@@ -222,6 +230,8 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("OdoV posX", getPoseV().getMeasureX().in(Units.Meters));
         SmartDashboard.putNumber("OdoV posY", getPoseV().getMeasureY().in(Units.Meters));
 
+        SmartDashboard.putBoolean("Braked", braked);
+
         fieldO.setRobotPose(getPose());
         fieldV.setRobotPose(getPoseV());
     }
@@ -244,9 +254,9 @@ public class SwerveDrive extends SubsystemBase {
             return;
         
         poseEstimator.addVisionMeasurement(
-            vis.pose,
+            new Pose2d(vis.pose.getTranslation(), vis.pose.getRotation().rotateBy(Rotation2d.k180deg)),
             vis.timestampSeconds,
-            VecBuilder.fill(.7, .7, 9999999)
+            VecBuilder.fill(vis.avgTagDist * .1, vis.avgTagDist * .1, vis.avgTagDist * .01)
         );
     }
 }

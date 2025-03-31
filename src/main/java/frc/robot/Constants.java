@@ -19,6 +19,9 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -40,7 +43,7 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final double period = .020; // seconds
+    public static final double period = .015; // seconds
     public static final double brownoutVoltage = 6.0;
 
     public static final class OperatorConstants {
@@ -61,13 +64,14 @@ public final class Constants {
 
     public static final class LimelightConstants {
         public static final String name = "limelight";
+        public static final AprilTagFieldLayout tagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
     }
 
     public static final class IntakeConstants {
         public static final SparkBaseConfig motorConfig = new SparkFlexConfig()
                 .idleMode(SparkBaseConfig.IdleMode.kCoast)
                 .inverted(false)
-                .smartCurrentLimit(50, 30);
+                .smartCurrentLimit(50, 40);
     }
 
     public static final class ElevatorConstants {
@@ -79,7 +83,7 @@ public final class Constants {
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
-        public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12,0.33,0, 0);
+        public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12, 0.42, 0, 0);
     }
 
     public static final class ArmConstants {
@@ -226,7 +230,7 @@ public final class Constants {
             swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
             /* PID Config */
-            swerveSteerFXConfig.Slot0.kP = swerveType.angleKP;
+            swerveSteerFXConfig.Slot0.kP = swerveType.angleKP * .20;
             swerveSteerFXConfig.Slot0.kI = swerveType.angleKI;
             swerveSteerFXConfig.Slot0.kD = swerveType.angleKD;
 

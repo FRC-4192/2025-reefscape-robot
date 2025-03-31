@@ -65,7 +65,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 1.0
+                        "waitTime": 0.3
                       }
                     },
                     {
@@ -93,18 +93,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "elevator L1"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.25
-          }
-        },
-        {
           "type": "race",
           "data": {
             "commands": [
@@ -112,12 +100,6 @@
                 "type": "named",
                 "data": {
                   "name": "intakeCoral"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 0.75
                 }
               }
             ]
@@ -134,15 +116,41 @@
                 }
               },
               {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeCoral"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm hold"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
                 "type": "named",
                 "data": {
-                  "name": "arm hold"
+                  "name": "elevator L4"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "elevator L0"
+                  "name": "alignToReefL"
                 }
               },
               {
@@ -168,19 +176,50 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "score mini"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "elevator L4"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm hold"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.1
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm intake"
+                      }
+                    }
+                  ]
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "alignToReefL"
+                  "name": "elevator L0"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "k to source"
                 }
               }
             ]
@@ -189,7 +228,45 @@
         {
           "type": "named",
           "data": {
-            "name": "score"
+            "name": "intakeCoral"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "source to l"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intakeCoral"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm hold"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intakeCoral"
           }
         }
       ]

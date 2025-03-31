@@ -23,8 +23,8 @@ import static frc.robot.Constants.ArmConstants;
 public class Arm extends SubsystemBase {
     private final TalonFX motor;
 
-    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(11, 14);
-    private final ProfiledPIDController controller = new ProfiledPIDController(0.8, 0, 0, constraints);
+    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(8, 15);
+    private final ProfiledPIDController controller = new ProfiledPIDController(1.6, 0, .01, constraints);
     private final PIDController simpleController = new PIDController(.5, 0, 0);
 
     public static final double WRIST_RATIO = 1./16/4.5;
@@ -61,6 +61,7 @@ public class Arm extends SubsystemBase {
         motor.getConfigurator().apply(ArmConstants.wristConfig);
 
         controller.setTolerance(.015);
+        controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond));
         simpleController.setTolerance(.01);
 
         sysIdRoutine = new SysIdRoutine(
@@ -149,7 +150,8 @@ public class Arm extends SubsystemBase {
     */
     private Command runTo() {
         return new FunctionalCommand(
-            () -> controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)),
+            // () -> controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)),
+            () -> controller.reset(getVelocity().in(Units.RadiansPerSecond) < .01 ? new TrapezoidProfile.State(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)) : controller.getSetpoint()),
             () -> motor.set(
                 controller.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians) + adjust)
                     + feedforward(getPosition(), controller.getSetpoint().velocity)
