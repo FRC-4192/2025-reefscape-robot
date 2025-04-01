@@ -15,7 +15,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.LimelightHelpers;
 import frc.robot.Constants.DriverConstants;
+import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoScore;
 import frc.robot.commands.TargetAlign;
@@ -61,7 +63,7 @@ public class RobotContainer {
         );
         swerve.setDefaultCommand(teleopSwerve);
 
-        elevator.setDefaultCommand(elevator.stayPID());
+        elevator.setDefaultCommand(elevator.stay());
         arm.setDefaultCommand(arm.stayPID());
 
         take.setDefaultCommand(take.runIntake(
@@ -158,7 +160,7 @@ public class RobotContainer {
         driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
 
         driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
-        driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
+        // driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
 
         // operator.povLeft().whileTrue(new TargetAlign(swerve));
         // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
@@ -211,6 +213,8 @@ public class RobotContainer {
             arm,
             take
         ));
+
+        driverC.leftTrigger(.1).or(operator.leftTrigger(.1)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name)));
 
         // led testing
         // operator.leftBumper().onTrue(glitter.dereasePWM()

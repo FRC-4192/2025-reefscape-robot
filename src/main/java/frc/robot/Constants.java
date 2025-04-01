@@ -71,7 +71,7 @@ public final class Constants {
         public static final SparkBaseConfig motorConfig = new SparkFlexConfig()
                 .idleMode(SparkBaseConfig.IdleMode.kCoast)
                 .inverted(false)
-                .smartCurrentLimit(50, 40);
+                .smartCurrentLimit(85, 80);
     }
 
     public static final class ElevatorConstants {

@@ -37,7 +37,7 @@ public class Elevator extends SubsystemBase {
         L0(0.00),
         L1(0.05),
         L2(0.5),
-        L3(0.18),
+        L3(0.24),
         L4(0.75);
 
         private final Distance position;
