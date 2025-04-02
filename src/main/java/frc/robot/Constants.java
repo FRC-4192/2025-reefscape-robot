@@ -99,6 +99,19 @@ public final class Constants {
         
         public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.141, 0, 0);
     }
+    public static final class GroundConstants {
+        public static final TalonFXConfiguration wristConfig = new TalonFXConfiguration()
+            .withCurrentLimits( new CurrentLimitsConfigs()
+                .withSupplyCurrentLimit(30)
+                .withStatorCurrentLimit(30))
+            .withMotorOutput( new MotorOutputConfigs()
+                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast));
+
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(-1); 
+
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0, 0);
+    }
 
     public static final class SwerveConstants {
         public static final COTSTalonFXSwerveConstants swerveType = COTSTalonFXSwerveConstants.SDS.MK4.Falcon500(COTSTalonFXSwerveConstants.SDS.MK4.driveRatios.L2);

@@ -1,16 +1,11 @@
 package frc.robot.commands;
 
-import java.util.Optional;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.LimelightHelpers;
-import frc.lib.LimelightHelpers.RawFiducial;
 import frc.robot.Constants.LimelightConstants;
 import frc.robot.subsystems.SwerveDrive;
 
@@ -22,16 +17,13 @@ public class TargetAlign extends Command {
     private final boolean turn;
 
     private final PIDController forwardController = new PIDController(2.5, 0, 0.0001);
-    private final PIDController strafeController = new PIDController(2.8, 2.4, 0.01);
+    private final PIDController strafeController = new PIDController(2.5, 0, 0.0001);
     private final PIDController rotationController = new PIDController(.06, 0, 0.0001);
     private final double kStatic = .16;
 
     private static final double bumperLength = .914;
     private static final double bumperWidth = .902;
     private static final double reefSeparation = .33;
-
-    private int target = -1;
-    private boolean noOdo = false;
         
     public TargetAlign(SwerveDrive swerve, boolean rightSide, boolean forward, boolean strafe, boolean turn) {
         this.swerve = swerve;
@@ -40,7 +32,7 @@ public class TargetAlign extends Command {
         this.strafe = strafe;
         this.turn = turn;
 
-        forwardController.setTolerance(0.01, 0.05);
+        forwardController.setTolerance(0.02, 0.05);
         strafeController.setTolerance(0.01, 0.05);
         rotationController.setTolerance(0.8, 2);
 
@@ -58,22 +50,15 @@ public class TargetAlign extends Command {
         strafeController.reset();
         rotationController.reset();
         LimelightHelpers.setLEDMode_ForceOn(LimelightConstants.name);
-
-        if (getPriorityTag() >= 0)
-            target = getPriorityTag();
     }
 
     @Override
     public void execute() {
         Pose3d pose = LimelightHelpers.getTargetPose3d_RobotSpace(LimelightConstants.name);
-
-        if (!noOdo && target >= 0)
-            pose = tagToRobot(new Pose3d(swerve.getPoseV()), target);
-
         if (pose.getTranslation().getNorm() != 0 && pose.getRotation().getAngle() != 0 && pose.getTranslation().getNorm() < 1.5) {
-            double rotationTarget = rotationController.calculate(noOdo ? Math.toDegrees(pose.getRotation().getY()) : Math.toDegrees(pose.getRotation().getZ()), 0);
-            double translationTarget = strafeController.calculate(noOdo ? -pose.getX() : pose.getY(), .5 * (rightSide ? reefSeparation : -reefSeparation));
-            double forwardTarget = forwardController.calculate(noOdo ? pose.getZ() : pose.getX(), bumperLength/2);
+            double rotationTarget = rotationController.calculate(Math.toDegrees(pose.getRotation().getY()), 0);
+            double translationTarget = -strafeController.calculate(pose.getX(), .5 * (rightSide ? -reefSeparation : reefSeparation));
+            double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2);
             swerve.drive(new ChassisSpeeds(
                 forward ? forwardTarget : 0,
                 strafe ? translationTarget : 0,
@@ -100,26 +85,5 @@ public class TargetAlign extends Command {
             LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name);
         else
             LimelightHelpers.setLEDMode_ForceBlink(LimelightConstants.name);
-    }
-
-    public static int getPriorityTag() {
-        RawFiducial[] tags = LimelightHelpers.getRawFiducials(LimelightConstants.name);
-        if (tags.length < 1)
-            return -1;
-        if (tags.length == 1)
-            return tags[0].id;
-        int best = 0;
-        for (int i = 0; i < tags.length; i ++)
-            if (tags[i].distToRobot < tags[best].distToRobot)
-                best = i;
-        return best;
-    }
-
-    public static Pose3d tagToRobot(Pose3d robot, int tag) {
-        Optional<Pose3d> tagPose = LimelightConstants.tagFieldLayout.getTagPose(tag);
-        if (tagPose.isEmpty())
-            return Pose3d.kZero;
-        SmartDashboard.putString("tag pose", tagPose.get().toString());
-        return robot.relativeTo(tagPose.get());
     }
 }

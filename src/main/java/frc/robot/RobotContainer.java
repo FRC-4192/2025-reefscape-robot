@@ -42,6 +42,7 @@ public class RobotContainer {
   
     // The robot's subsystems and commands are defined here...
     private final SwerveDrive swerve = new SwerveDrive();
+    private final GroundTake ground = new GroundTake();
     private final Elevator elevator = new Elevator();
     private final Arm arm = new Arm();
     private final Take take = new Take();
@@ -69,6 +70,9 @@ public class RobotContainer {
         take.setDefaultCommand(take.runIntake(
                 () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
         ));
+
+        ground.setDefaultCommand(ground.stay());
+
         // rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
 
         // Configure the trigger bindings
@@ -160,6 +164,22 @@ public class RobotContainer {
         driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
 
         driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
+
+
+        //comment out this code when testing
+        new Trigger(() -> driver.getLeftTriggerAxis()>.01).and(() -> elevator.getState() == Elevator.State.L0)
+            .onTrue(
+               ground.setTargetOnly(GroundTake.State.SCORING)
+            );
+        driverC.y().onTrue((ground.getState()!=GroundTake.State.HOLDING) ? ground.setTargetOnly(GroundTake.State.INTAKING) : ground.setTargetOnly(GroundTake.State.HOLDING));
+        
+        new Trigger(() -> ground.getState()!=GroundTake.State.HOLDING)
+            .onTrue(ground.runIntake(
+            () -> .75 * Math.min(Math.max(
+                    operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
+        
+        
+        
         // driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
 
         // operator.povLeft().whileTrue(new TargetAlign(swerve));
@@ -169,8 +189,10 @@ public class RobotContainer {
         //     () -> driverC.setRumble(RumbleType.kBothRumble, .5),
         //     () -> driverC.setRumble(RumbleType.kBothRumble, 0)
         // ).until(() -> arm.getState() == Arm.State.SCORING);
-        boolean testing = false;
 
+        
+        boolean testing = false;
+        
         driverC.leftBumper().whileTrue(testing ? new TargetAlign(swerve, false, false, false, false) : new TargetAlign(swerve, false));
         driverC.rightBumper().whileTrue(testing ? new TargetAlign(swerve, true, false, false, false) : new TargetAlign(swerve, true));
 
