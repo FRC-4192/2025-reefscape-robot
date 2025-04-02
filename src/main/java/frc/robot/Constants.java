@@ -105,10 +105,10 @@ public final class Constants {
                 .withSupplyCurrentLimit(30)
                 .withStatorCurrentLimit(30))
             .withMotorOutput( new MotorOutputConfigs()
-                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
-        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(-1); 
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(109.6359375); 
 
         public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0, 0);
     }

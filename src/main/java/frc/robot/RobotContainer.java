@@ -70,8 +70,11 @@ public class RobotContainer {
         take.setDefaultCommand(take.runIntake(
                 () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
         ));
+        ground.setDefaultCommand(ground.runIntake(
+                () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
+        ));
 
-        ground.setDefaultCommand(ground.stay());
+        // ground.setDefaultCommand(ground.stay());
 
         // rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
 
@@ -166,17 +169,17 @@ public class RobotContainer {
         driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
 
 
-        //comment out this code when testing
-        new Trigger(() -> driver.getLeftTriggerAxis()>.01).and(() -> elevator.getState() == Elevator.State.L0)
-            .onTrue(
-               ground.setTargetOnly(GroundTake.State.SCORING)
-            );
-        driverC.y().onTrue((ground.getState()!=GroundTake.State.HOLDING) ? ground.setTargetOnly(GroundTake.State.INTAKING) : ground.setTargetOnly(GroundTake.State.HOLDING));
+        // comment out this code when testing
+        // new Trigger(() -> driver.getLeftTriggerAxis()>.01).and(() -> elevator.getState() == Elevator.State.L0)
+        //     .onTrue(
+        //        ground.setTargetOnly(GroundTake.State.SCORING)
+        //     );
+        // driverC.y().onTrue((ground.getState()!=GroundTake.State.HOLDING) ? ground.setTargetOnly(GroundTake.State.INTAKING) : ground.setTargetOnly(GroundTake.State.HOLDING));
         
-        new Trigger(() -> ground.getState()!=GroundTake.State.HOLDING)
-            .onTrue(ground.runIntake(
-            () -> .75 * Math.min(Math.max(
-                    operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
+        // new Trigger(() -> true)
+        //     .onTrue(ground.runIntake(
+        //     () -> .75 * Math.min(Math.max(
+        //             operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
         
         
         

@@ -32,7 +32,7 @@ public class GroundTake extends SubsystemBase {
     private final PIDController simpleController = new PIDController(.5, 0, 0);
 
 
-    public static final double WRIST_RATIO = 1/5/5;
+    public static final double WRIST_RATIO = 1.0/25.0/4.5;
 
     private double adjust = 0.0;
 
@@ -47,9 +47,9 @@ public class GroundTake extends SubsystemBase {
     private boolean spike;
 
     public enum State {
-        INTAKING(0),
-        HOLDING(0),
-        SCORING(0);
+        INTAKING(1),
+        HOLDING(105),
+        SCORING(93);
 
         private final Angle angle;
 
@@ -69,6 +69,7 @@ public class GroundTake extends SubsystemBase {
     public GroundTake() {
         wrist = new TalonFX(17);
         take = new SparkFlex(18, MotorType.kBrushless);
+        
 
         // todo configuration for motors
         wrist.getConfigurator().apply(Constants.GroundConstants.wristConfig);
@@ -158,16 +159,17 @@ public class GroundTake extends SubsystemBase {
         originalCurrent = take.getOutputCurrent();
         filteredCurrent = filter.update(originalCurrent);
 
-        SmartDashboard.putNumber("Take Current", originalCurrent);
-        SmartDashboard.putNumber("Take Current w/ Low Pass Filter", filteredCurrent);
-        SmartDashboard.putNumber("Wrist Current (A)", getCurrent().in(Units.Amp));
-        SmartDashboard.putNumber("Wrist Power", wrist.get());
-        SmartDashboard.putNumber("Wrist Position", getPosition().in(Units.Degree));
-        SmartDashboard.putNumber("Wrist Velo", getVelocity().in(Units.DegreesPerSecond));
-        SmartDashboard.putNumber("Wrist Accel", getAcceleration().in(Units.DegreesPerSecondPerSecond));
+        SmartDashboard.putNumber("GroundTake Current", originalCurrent);
+        SmartDashboard.putNumber("GroundTake Current w/ Low Pass Filter", filteredCurrent);
 
-        SmartDashboard.putNumberArray("Wrist Pos(array)", new double[] { Math.toDegrees(controller.getSetpoint().position), getPosition().in(Units.Degrees) });
-        SmartDashboard.putNumberArray("Wrist Vel(array)", new double[] { Math.toDegrees(controller.getSetpoint().velocity), getVelocity().in(Units.DegreesPerSecond) });
+        SmartDashboard.putNumber("GroundWrist Current (A)", getCurrent().in(Units.Amp));
+        SmartDashboard.putNumber("GroundWrist Power", wrist.get());
+        SmartDashboard.putNumber("GroundWrist Position", getPosition().in(Units.Degree));
+        SmartDashboard.putNumber("GroundWrist Velo", getVelocity().in(Units.DegreesPerSecond));
+        SmartDashboard.putNumber("GroundWrist Accel", getAcceleration().in(Units.DegreesPerSecondPerSecond));
+
+        SmartDashboard.putNumberArray("GroundWrist Pos(array)", new double[] { Math.toDegrees(controller.getSetpoint().position), getPosition().in(Units.Degrees) });
+        SmartDashboard.putNumberArray("GroundWrist Vel(array)", new double[] { Math.toDegrees(controller.getSetpoint().velocity), getVelocity().in(Units.DegreesPerSecond) });
 
     }
 
