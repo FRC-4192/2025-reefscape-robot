@@ -42,7 +42,8 @@ public class RobotContainer {
   
     // The robot's subsystems and commands are defined here...
     private final SwerveDrive swerve = new SwerveDrive();
-    private final GroundTake ground = new GroundTake();
+    private final GroundTake groundTake = new GroundTake();
+    private final GroundWrist groundWrist = new GroundWrist();
     private final Elevator elevator = new Elevator();
     private final Arm arm = new Arm();
     private final Take take = new Take();
@@ -64,17 +65,19 @@ public class RobotContainer {
         );
         swerve.setDefaultCommand(teleopSwerve);
 
-        elevator.setDefaultCommand(elevator.stay());
+        elevator.setDefaultCommand(elevator.stayPID());
         arm.setDefaultCommand(arm.stayPID());
 
         take.setDefaultCommand(take.runIntake(
                 () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
         ));
-        ground.setDefaultCommand(ground.runIntake(
-                () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
-        ));
+        // ground.setDefaultCommand(ground.runIntake(
+        //         () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
+        // ));
 
-        // ground.setDefaultCommand(ground.stay());
+        groundTake.setDefaultCommand(groundTake.runIntake(() -> -.95 * operator.getRightY()));
+
+        groundWrist.setDefaultCommand(groundWrist.stayPID());
 
         // rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
 
@@ -164,23 +167,45 @@ public class RobotContainer {
      */
     private void configureBindings() {
         driverC.start().onTrue(Commands.runOnce(glitter::toggleDrivePov));
-        driverC.leftStick().or(driverC.rightStick()).onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
+        driverC.leftStick().onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
 
-        driverC.rightStick().and(driverC.leftStick()).whileTrue(swerve.run(swerve::lockDrive));
+        driverC.rightStick().whileTrue(swerve.run(swerve::lockDrive));
 
 
         // comment out this code when testing
         // new Trigger(() -> driver.getLeftTriggerAxis()>.01).and(() -> elevator.getState() == Elevator.State.L0)
-        //     .onTrue(
-        //        ground.setTargetOnly(GroundTake.State.SCORING)
-        //     );
-        // driverC.y().onTrue((ground.getState()!=GroundTake.State.HOLDING) ? ground.setTargetOnly(GroundTake.State.INTAKING) : ground.setTargetOnly(GroundTake.State.HOLDING));
+        //     .and(() -> arm.getState()!=Arm.State.INTAKING)
+        //     .and(()-> driver.getRightStickButton())
+        //         .onTrue(
+        //         ground.setTargetOnly(GroundTake.State.SCORING).andThen(ground.outtakeCoral(1))
+        //         );
+
         
-        // new Trigger(() -> true)
-        //     .onTrue(ground.runIntake(
-        //     () -> .75 * Math.min(Math.max(
-        //             operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
+        // driverC.y().onTrue((ground.getState()==GroundTake.State.HOLDING) ? ground.setTargetOnly(GroundTake.State.INTAKING) : ground.setTargetOnly(GroundTake.State.HOLDING));
         
+        // new Trigger(() -> groundWrist.getState() == GroundWrist.State.INTAKING).whileTrue(groundTake.intakeCoral(
+        //     () -> .75 * -operator.getRightY()
+        // ).andThen(groundWrist.setTargetOnly(GroundWrist.State.SCORING).asProxy()));
+        // new Trigger(() -> groundWrist.getState() == GroundWrist.State.SCORING).whileTrue(groundTake.outtakeCoral(() -> 1 * operator.getRightY()));
+
+        operator.rightBumper().onTrue(groundWrist.setTargetOnly(GroundWrist.State.SCORING));
+        operator.leftBumper().onTrue(groundWrist.setTargetOnly(GroundWrist.State.INTAKING));
+        driverC.povRight().onTrue(groundWrist.toggleState());
+        
+
+        // new Trigger(() -> ground.getState() == GroundTake.State.INTAKING).and(() -> driver.getRightTriggerAxis()>.01).and(()-> driver.getRightStickButton())
+
+        //     .onTrue(ground.intakeCoral(() -> 1));
+
+        // new Trigger(() -> driver.getRightTriggerAxis()>.01)
+        //     .and(() -> !ground.hasCoral() )
+        //     .and(() -> ground.getState()==GroundTake.State.SCORING||ground.getState()==GroundTake.State.HOLDING)
+        //     .and(() -> arm.getState()!=Arm.State.INTAKING)
+        //     .and(()-> driver.getRightStickButton())
+        //         .onTrue(
+        //             ground.intakeCoralSequence(() -> 1)
+        //         );
+            
         
         
         // driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
@@ -202,7 +227,7 @@ public class RobotContainer {
         driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
 
         operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift() || elevator.getState() == Elevator.State.L1).onTrue(elevator.setTargetOnly(Elevator.State.L0));
-        driverC.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L1));
+        // driverC.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L1));
         
         // new Trigger(() -> (driver.getLeftX()!=0
         //     ||driver.getLeftY()!=0
@@ -216,15 +241,16 @@ public class RobotContainer {
         operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L3)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
         operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
 
-        operator.a().or(driver::getAButton).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
-        operator.b().or(driver::getBButton).onTrue(arm.setTargetOnly(Arm.State.SCORING));
-        operator.x().or(driver::getXButton).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
+        operator.a().or(driverC.a()).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
+        operator.b().or(driverC.b()).onTrue(arm.setTargetOnly(Arm.State.SCORING));
+        operator.x().or(driverC.x()).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
+        operator.y().or(driverC.y()).onTrue(arm.setTargetOnly(Arm.State.DUNKING));
 
-        operator.rightBumper().whileTrue(take.intakeCoral(() -> .7).andThen(Commands.runOnce(() -> arm.setTargetOnly(Arm.State.HOLDING).schedule())));
-        operator.leftBumper().whileTrue(take.outtakeCoral(.5));
+        // operator.rightBumper().whileTrue(take.intakeCoral(() -> .7).andThen(Commands.runOnce(() -> arm.setTargetOnly(Arm.State.HOLDING).schedule())));
+        // operator.leftBumper().whileTrue(take.outtakeCoral(.5));
 
-        operator.leftStick().whileTrue(arm.rezero());
-        operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
+        operator.leftStick().whileTrue(arm.rezero(() -> .075));
+        // operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
 
         operator.back().onTrue(new AutoScore(
             new TargetAlign(swerve, false),
@@ -239,7 +265,7 @@ public class RobotContainer {
             take
         ));
 
-        driverC.leftTrigger(.1).or(operator.leftTrigger(.1)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name)));
+        driverC.leftTrigger(.02).or(operator.leftTrigger(.02)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name)));
 
         // led testing
         // operator.leftBumper().onTrue(glitter.dereasePWM()

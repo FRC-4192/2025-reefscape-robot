@@ -55,9 +55,9 @@ public final class Constants {
         public static final int controllerPort = 0;
         public static final double stickDeadband = .01;
 
-        public static final double swerveMaxTransSpeed = 0.50;
-        public static final double swerveMaxTurnSpeed = 0.50;
-        public static final double swerveSlowSpeed = 0.20;
+        public static final double swerveMaxTransSpeed = 0.75;
+        public static final double swerveMaxTurnSpeed = 0.55;
+        public static final double swerveSlowSpeed = 0.25;
 
         public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(25.0, 100.0);
     }
@@ -99,6 +99,7 @@ public final class Constants {
         
         public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.141, 0, 0);
     }
+
     public static final class GroundConstants {
         public static final TalonFXConfiguration wristConfig = new TalonFXConfiguration()
             .withCurrentLimits( new CurrentLimitsConfigs()
@@ -108,9 +109,14 @@ public final class Constants {
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
+        public static final SparkBaseConfig takeConfig = new SparkFlexConfig()
+            .idleMode(SparkBaseConfig.IdleMode.kCoast)
+            .inverted(false)
+            .smartCurrentLimit(85, 80);
+
         public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(109.6359375); 
 
-        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0, 0);
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.1, 0, 0);
     }
 
     public static final class SwerveConstants {
@@ -250,7 +256,7 @@ public final class Constants {
             /* Swerve Drive Motor Configuration */
             /* Motor Inverts and Neutral Mode */
             swerveDriveFXConfig.MotorOutput.Inverted = swerveType.driveMotorInvert;
-            swerveDriveFXConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+            swerveDriveFXConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
             /* Gear Ratio Config */
             swerveDriveFXConfig.Feedback.SensorToMechanismRatio = swerveType.driveGearRatio;

@@ -76,6 +76,7 @@ public class TeleopSwerve extends Command {
         );
 
         SmartDashboard.putBoolean("Field Centric", isFieldCentric.getAsBoolean());
+        SmartDashboard.putBoolean("Slow Mode", isSlow.getAsBoolean());
         SmartDashboard.putNumberArray("DriverX", new double[] {-drive.getAsDouble(), translationVal});
     }
 }

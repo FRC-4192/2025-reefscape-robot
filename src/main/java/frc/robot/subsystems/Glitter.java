@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.PWM;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -12,7 +13,7 @@ public class Glitter extends SubsystemBase {
 //        FIELDCENTRIC(1905),
 //        ROBOTCENTRIC(1785),
         FIELD_CENTRIC(1315),
-        ROBOT_CENTRIC(1145),
+        ROBOT_CENTRIC(1305),
         FIELD_SPEED(1305),
         ROBOT_SPEED(1135),
         INTAKEREADY(1885),
@@ -26,7 +27,7 @@ public class Glitter extends SubsystemBase {
     }
 
     public Glitter() {
-        led = new PWM(19);
+        led = new PWM(14);
     }
 
 //    public Command increasePWM() {
@@ -88,6 +89,7 @@ public class Glitter extends SubsystemBase {
     @Override
     public void periodic() {
         led.setPulseTimeMicroseconds(state.code);
+        SmartDashboard.putString("glitter state", state.name());
     }
 
 }

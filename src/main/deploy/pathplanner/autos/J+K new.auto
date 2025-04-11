@@ -101,6 +101,12 @@
                 "data": {
                   "name": "intakeCoral"
                 }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
               }
             ]
           }

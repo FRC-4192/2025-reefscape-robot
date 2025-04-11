@@ -11,23 +11,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.Constants;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.GroundConstants;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import static frc.robot.Constants.ArmConstants;
+import static frc.robot.Constants.GroundConstants;;
 
-@SuppressWarnings("unused")
-public class Arm extends SubsystemBase {
+public class GroundWrist extends SubsystemBase {
     private final TalonFX motor;
 
-    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(8, 15);
-    private final ProfiledPIDController controller = new ProfiledPIDController(1.6, 0, .01, constraints);
-    private final PIDController simpleController = new PIDController(.5, 0, 0);
+    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2.5, 6);
+    private final ProfiledPIDController controller = new ProfiledPIDController(1.5, 0, .01, constraints);
+    private final PIDController simpleController = new PIDController(1, 0, 0);
 
-    public static final double WRIST_RATIO = 1./16/4.5;
+    public static final double WRIST_RATIO = 1.0/25.0/4.5;
 
     private State state = State.HOLDING;
     private double adjust = 0.0;
@@ -35,12 +34,9 @@ public class Arm extends SubsystemBase {
     private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        INTAKING(-72),
-        HOLDING(110),
-        DUNKING(90 - 32.211),
-        SCORING(99),
-        EJECTING(-80), // L1 scoring or throwing away unwanted coral
-        ALGAE(-55);
+        INTAKING(4),
+        HOLDING(115),
+        SCORING(95);
 
         private final Angle angle;
 
@@ -56,28 +52,15 @@ public class Arm extends SubsystemBase {
         }
     }
     
-    public Arm() {
-        motor = new TalonFX(9);
-        motor.getConfigurator().apply(ArmConstants.wristConfig);
+    public GroundWrist() {
+        motor = new TalonFX(17);
+        motor.getConfigurator().apply(GroundConstants.wristConfig);
 
         controller.setTolerance(.015);
         controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond));
         simpleController.setTolerance(.01);
 
-        sysIdRoutine = new SysIdRoutine(
-            new SysIdRoutine.Config(),
-            new SysIdRoutine.Mechanism(
-                voltage -> motor.setVoltage(voltage.in(Units.Volts)),
-                log -> log.motor("wrist")
-                    .voltage(motor.getMotorVoltage().getValue())
-                    .angularPosition(getPosition())
-                    .angularVelocity(getVelocity())
-                    .angularAcceleration(getAcceleration())
-                    .current(getCurrent()),
-                this
-            )
-        );
-
+        rezero();
         setDefaultCommand(stay());
     }
 
@@ -88,12 +71,8 @@ public class Arm extends SubsystemBase {
         return state.angle;
     }
 
-    public boolean isSafeToLift() {
-        return getState() == State.HOLDING || getState() == State.SCORING;
-    }
-
     public Angle getPosition() {
-        return motor.getPosition().getValue().times(WRIST_RATIO).plus(ArmConstants.START_HORIZONTAL_OFFSET).plus(offsetOffset);
+        return motor.getPosition().getValue().times(WRIST_RATIO).plus(GroundConstants.START_HORIZONTAL_OFFSET).plus(offsetOffset);
     }
     public AngularVelocity getVelocity() {
         return motor.getVelocity().getValue().times(WRIST_RATIO);
@@ -114,11 +93,14 @@ public class Arm extends SubsystemBase {
         adjust = 0;
         return runOnce(() -> this.state = state).andThen(runTo());        
     }
-
-    public Command adjust(DoubleSupplier radiansPerSecond) {
-        MutAngle startAngle = getPosition().mutableCopy();
-        return runBasic(() -> startAngle.mut_plus(radiansPerSecond.getAsDouble() * Constants.period, Units.Radians));
+    public Command toggleState() {
+        return runOnce(() -> this.state = state == State.INTAKING ? State.SCORING : State.INTAKING).andThen(runTo());
     }
+
+    // public Command adjust(DoubleSupplier radiansPerSecond) {
+    //     MutAngle startAngle = getPosition().mutableCopy();
+    //     return runBasic(() -> startAngle.mut_plus(radiansPerSecond.getAsDouble() * Constants.period, Units.Radians));
+    // }
 
     public void rezero() {
         offsetOffset = offsetOffset.plus(ArmConstants.START_HORIZONTAL_OFFSET.minus(getPosition()));
@@ -126,9 +108,6 @@ public class Arm extends SubsystemBase {
     public Command rezero(DoubleSupplier power) {
         return runEnd(() -> motor.set(power.getAsDouble()), stay()::execute).finallyDo(() -> rezero());
     }
-    // public Command rezero() {
-    //     return rezero(() -> .075);
-    // }
 
     public Angle getError() {
         return getState().angle.minus(getPosition());
@@ -137,14 +116,14 @@ public class Arm extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Wrist Current (A)", getCurrent().in(Units.Amp));
-        SmartDashboard.putNumber("Wrist Power", motor.get());
-        SmartDashboard.putNumber("Wrist Position", getPosition().in(Units.Degree));
-        SmartDashboard.putNumber("Wrist Velo", getVelocity().in(Units.DegreesPerSecond));
-        SmartDashboard.putNumber("Wrist Accel", getAcceleration().in(Units.DegreesPerSecondPerSecond));
+        SmartDashboard.putNumber("GW Current", getCurrent().in(Units.Amp));
+        SmartDashboard.putNumber("GW Power", motor.get());
+        SmartDashboard.putNumber("GW Position", getPosition().in(Units.Degree));
+        SmartDashboard.putNumber("GW Velo", getVelocity().in(Units.DegreesPerSecond));
+        SmartDashboard.putNumber("GW Accel", getAcceleration().in(Units.DegreesPerSecondPerSecond));
 
-        SmartDashboard.putNumberArray("Wrist Pos(array)", new double[] { Math.toDegrees(controller.getSetpoint().position), getPosition().in(Units.Degrees) });
-        SmartDashboard.putNumberArray("Wrist Vel(array)", new double[] { Math.toDegrees(controller.getSetpoint().velocity), getVelocity().in(Units.DegreesPerSecond) });
+        SmartDashboard.putNumberArray("GW Pos(array)", new double[] { Math.toDegrees(controller.getSetpoint().position), getPosition().in(Units.Degrees) });
+        SmartDashboard.putNumberArray("GW Vel(array)", new double[] { Math.toDegrees(controller.getSetpoint().velocity), getVelocity().in(Units.DegreesPerSecond) });
     }
 
 
@@ -183,21 +162,7 @@ public class Arm extends SubsystemBase {
         return run(() -> motor.set(simpleController.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians) + adjust) + feedforward(getPosition(), 0)));
     }
 
-
     public static double feedforward(Angle position, double velocity) {
-        return ArmConstants.feedforward.calculate(position.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
-    }
-
-
-    //--------------------------------------------------------------------------
-    // Sys ID Stuff
-    private final SysIdRoutine sysIdRoutine;
-
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.quasistatic(direction);
-    }
-
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return sysIdRoutine.dynamic(direction);
+        return GroundConstants.feedforward.calculate(position.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
     }
 }

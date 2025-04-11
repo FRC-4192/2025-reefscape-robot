@@ -101,6 +101,12 @@
                 "data": {
                   "name": "intakeCoral"
                 }
+              },
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 1.0
+                }
               }
             ]
           }
@@ -178,7 +184,51 @@
         {
           "type": "named",
           "data": {
-            "name": "score"
+            "name": "score mini"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm hold"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.1
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm intake"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevator L0"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "d to source"
+                }
+              }
+            ]
           }
         }
       ]

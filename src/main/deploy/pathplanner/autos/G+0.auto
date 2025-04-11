@@ -5,15 +5,59 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "start to G"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "start to G"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "arm hold"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignToReefL"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevator L4"
+                }
+              }
+            ]
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "score"
+            "name": "score mini"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "arm hold"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "elevator L0"
           }
         }
       ]
