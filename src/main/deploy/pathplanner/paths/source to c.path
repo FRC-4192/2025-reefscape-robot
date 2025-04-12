@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.746166918429003,
-        "y": 4.154239048338368
+        "x": 1.2,
+        "y": 0.645
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.724301359516616,
-        "y": 1.332666163141993
+        "x": 2.015254923138248,
+        "y": 1.2939494598088572
       },
       "isLocked": false,
-      "linkedName": "Deposit Pos1"
+      "linkedName": "Source Right"
     },
     {
       "anchor": {
-        "x": 1.4580815709969785,
-        "y": 1.1452888972809672
+        "x": 3.7724751655629136,
+        "y": 2.7707367549668867
       },
       "prevControl": {
-        "x": 7.131344410876133,
-        "y": 0.29695052870090644
+        "x": 3.3899212002575587,
+        "y": 2.4572808359622984
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Intake Coral Close"
+      "linkedName": "Coral C"
     }
   ],
   "rotationTargets": [],
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -125.00000000000001
+    "rotation": -119.99999999999999
   },
   "reversed": false,
-  "folder": "PosA1 to Intake",
+  "folder": "E+D",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -126.0
   },
   "useDefaultConstraints": true
 }

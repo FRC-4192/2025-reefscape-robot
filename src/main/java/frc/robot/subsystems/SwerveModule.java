@@ -32,6 +32,8 @@ public class SwerveModule {
     /* angle motor control requests */
     private final PositionVoltage anglePosition = new PositionVoltage(0);
 
+    private SwerveModuleState lastState = new SwerveModuleState();
+
     
     public SwerveModule(SwerveConstants.ModuleConstants moduleConstants) {
         angleOffset = moduleConstants.angleOffset;
@@ -94,6 +96,7 @@ public class SwerveModule {
     @param state The swerve module state to set.
     */
     public void setState(SwerveModuleState state, boolean isOpenLoop) {
+        state.optimize(lastState.angle);
         steerMotor.setControl(anglePosition.withPosition(state.angle.getRotations()));
         if(isOpenLoop) {
             driveMotor.setControl(driveDutyCycle.withOutput(state.speedMetersPerSecond / SwerveConstants.maxSpeed));
@@ -104,6 +107,7 @@ public class SwerveModule {
             );
         }
 
+        lastState = state;
         SmartDashboard.putNumber("driv mot" + driveMotor.getDeviceID(), driveMotor.get());
     }
 

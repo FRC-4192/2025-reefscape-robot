@@ -14,10 +14,14 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.LimelightHelpers;
+import frc.lib.util.SwerveModuleStatesDashboarder;
 import frc.robot.Constants;
 import frc.robot.Constants.LimelightConstants;
 
 import static frc.robot.Constants.SwerveConstants;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class SwerveDrive extends SubsystemBase {
 
@@ -30,6 +34,8 @@ public class SwerveDrive extends SubsystemBase {
 
     public Field2d fieldO = new Field2d();
     public Field2d fieldV = new Field2d();
+    public SwerveModuleStatesDashboarder smsd = new SwerveModuleStatesDashboarder();
+    private ChassisSpeeds lastChassisSpeeds = new ChassisSpeeds();
 
     private boolean braked = false;
     
@@ -61,8 +67,8 @@ public class SwerveDrive extends SubsystemBase {
         );
 
         AutoBuilder.configure(
-            this::getPose,
-            this::setPose,
+            this::getPoseV,
+            (x) -> {setPose(x);setPoseV(x);},
             this::getCurrentVelocity,
             this::driveAuto, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
             SwerveConstants.autoFollowerController,
@@ -152,6 +158,7 @@ public class SwerveDrive extends SubsystemBase {
         };
     }
 
+    // @AutoLogOutput
     public SwerveModuleState[] getModuleStates() {
         return new SwerveModuleState[] {
             swerveModules[0].getState(),
@@ -170,6 +177,7 @@ public class SwerveDrive extends SubsystemBase {
     public void driveAuto(ChassisSpeeds chassisSpeeds) {
         SwerveModuleState[] swerveModuleStates = SwerveConstants.kinematics.toSwerveModuleStates(chassisSpeeds);
         SmartDashboard.putString("aut cs", chassisSpeeds.toString());
+        lastChassisSpeeds = chassisSpeeds;
 
         setSwerveModuleStates(swerveModuleStates, false);
     }
@@ -180,6 +188,7 @@ public class SwerveDrive extends SubsystemBase {
     public void drive(ChassisSpeeds chassisSpeeds, boolean isOpenLoop) {
         SwerveModuleState[] swerveModuleStates = SwerveConstants.kinematics.toSwerveModuleStates(chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.maxSpeed);
+        lastChassisSpeeds = chassisSpeeds;
 
         setSwerveModuleStates(swerveModuleStates, isOpenLoop);
     }
@@ -229,6 +238,13 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("OdoV yaw", getHeadingV().getDegrees());
         SmartDashboard.putNumber("OdoV posX", getPoseV().getMeasureX().in(Units.Meters));
         SmartDashboard.putNumber("OdoV posY", getPoseV().getMeasureY().in(Units.Meters));
+
+        // SmartDashboard.putNumberArray("swerve module states", smsd.update(getModuleStates()));
+        // SmartDashboard.putNumberArray("chassis speeds", new double[] {lastChassisSpeeds.vxMetersPerSecond, lastChassisSpeeds.vyMetersPerSecond, lastChassisSpeeds.omegaRadiansPerSecond});
+        Logger.recordOutput("swerve module states", getModuleStates());
+        Logger.recordOutput("swerve chassis speeds", lastChassisSpeeds);
+        Logger.recordOutput("swerve gyro yaw", getHeadingGyro());
+        Logger.recordOutput("swerve odo yaw", getHeadingV());
 
         SmartDashboard.putBoolean("Braked", braked);
 

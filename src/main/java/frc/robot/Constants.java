@@ -55,7 +55,7 @@ public final class Constants {
         public static final int controllerPort = 0;
         public static final double stickDeadband = .01;
 
-        public static final double swerveMaxTransSpeed = 0.75;
+        public static final double swerveMaxTransSpeed = 0.95;
         public static final double swerveMaxTurnSpeed = 0.55;
         public static final double swerveSlowSpeed = 0.25;
 
@@ -117,6 +117,20 @@ public final class Constants {
         public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(109.6359375); 
 
         public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.1, 0, 0);
+    }
+
+    public static final class HangConstants {
+        public static final TalonFXConfiguration hangConfig = new TalonFXConfiguration()
+            .withCurrentLimits( new CurrentLimitsConfigs()
+                .withSupplyCurrentLimit(30)
+                .withStatorCurrentLimit(30))
+            .withMotorOutput( new MotorOutputConfigs()
+                .withInverted(InvertedValue.Clockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast));
+
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(0); 
+
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0, 0);
     }
 
     public static final class SwerveConstants {
@@ -244,12 +258,12 @@ public final class Constants {
             
             /* Current Limiting */
             swerveSteerFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 20;
-            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLimit = 25;
+            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 30;
+            swerveSteerFXConfig.CurrentLimits.SupplyCurrentLimit = 40;
             swerveSteerFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.1;
 
             /* PID Config */
-            swerveSteerFXConfig.Slot0.kP = swerveType.angleKP * .20;
+            swerveSteerFXConfig.Slot0.kP = swerveType.angleKP * .25;
             swerveSteerFXConfig.Slot0.kI = swerveType.angleKI;
             swerveSteerFXConfig.Slot0.kD = swerveType.angleKD;
 
@@ -262,10 +276,10 @@ public final class Constants {
             swerveDriveFXConfig.Feedback.SensorToMechanismRatio = swerveType.driveGearRatio;
 
             /* Current Limiting */
-            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable =true;
-            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 30;
-            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimit = 40;
-            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.1;
+            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerLimit = 60;
+            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLimit = 80;
+            swerveDriveFXConfig.CurrentLimits.SupplyCurrentLowerTime = 0.2;
 
             /* PID Config */
             swerveDriveFXConfig.Slot0.kP = 2.5;
