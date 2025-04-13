@@ -239,7 +239,7 @@ public class SwerveDrive extends SubsystemBase {
         SmartDashboard.putNumber("OdoV posX", getPoseV().getMeasureX().in(Units.Meters));
         SmartDashboard.putNumber("OdoV posY", getPoseV().getMeasureY().in(Units.Meters));
 
-        // SmartDashboard.putNumberArray("swerve module states", smsd.update(getModuleStates()));
+        SmartDashboard.putNumberArray("swerve module states", smsd.update(getModuleStates()));
         // SmartDashboard.putNumberArray("chassis speeds", new double[] {lastChassisSpeeds.vxMetersPerSecond, lastChassisSpeeds.vyMetersPerSecond, lastChassisSpeeds.omegaRadiansPerSecond});
         Logger.recordOutput("swerve module states", getModuleStates());
         Logger.recordOutput("swerve chassis speeds", lastChassisSpeeds);

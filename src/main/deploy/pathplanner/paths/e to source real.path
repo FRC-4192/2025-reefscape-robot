@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.2107615894039725,
-        "y": 2.828849337748344
+        "x": 5.109064569536424,
+        "y": 2.8579056291390725
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.4328759547247065,
-        "y": 2.369578377971451
+        "x": 4.432630034148571,
+        "y": 2.4408460928334947
       },
       "isLocked": false,
       "linkedName": "Coral E"
@@ -20,8 +20,8 @@
         "y": 0.645
       },
       "prevControl": {
-        "x": 2.2797725007624985,
-        "y": 1.2904884558201632
+        "x": 2.019719686181878,
+        "y": 1.1137807695685482
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,7 +30,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.25,
+      "waypointRelativePos": 0.10498409331920501,
       "rotationDegrees": -59.99999999999999
     }
   ],

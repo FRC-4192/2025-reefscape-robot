@@ -43,7 +43,7 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final double period = .015; // seconds
+    public static final double period = .010; // seconds
     public static final double brownoutVoltage = 6.0;
 
     public static final class OperatorConstants {
@@ -55,11 +55,11 @@ public final class Constants {
         public static final int controllerPort = 0;
         public static final double stickDeadband = .01;
 
-        public static final double swerveMaxTransSpeed = 0.95;
+        public static final double swerveMaxTransSpeed = 0.90;
         public static final double swerveMaxTurnSpeed = 0.55;
         public static final double swerveSlowSpeed = 0.25;
 
-        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(25.0, 100.0);
+        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(18.0, 75.0);
     }
 
     public static final class LimelightConstants {

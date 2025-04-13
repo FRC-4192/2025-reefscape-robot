@@ -15,6 +15,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import static frc.robot.Constants.DriverConstants;
+import static frc.robot.Constants.SwerveConstants;
 
 @SuppressWarnings("unused")
 public class TeleopSwerve extends Command {
@@ -59,17 +60,17 @@ public class TeleopSwerve extends Command {
 //        if (isFieldCentric.getAsBoolean())
 //            isFieldCentric.getAsBoolean() = !isFieldCentric.getAsBoolean();
 
-        double translationVal = tipFilterX.calculate(MathUtil.applyDeadband(-drive.getAsDouble(), DriverConstants.stickDeadband));
-        double strafeVal = tipFilterY.calculate(MathUtil.applyDeadband(-strafe.getAsDouble(), DriverConstants.stickDeadband));
-        double rotationVal = MathUtil.applyDeadband(-turn.getAsDouble(), DriverConstants.stickDeadband);
+        double translationVal = tipFilterX.calculate(MathUtil.applyDeadband(-drive.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed));
+        double strafeVal = tipFilterY.calculate(MathUtil.applyDeadband(-strafe.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed));
+        double rotationVal = MathUtil.applyDeadband(-turn.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed);
 
         swerve.drive(
             new Pose2d(
                 new Translation2d(
                         isFieldCentric.getAsBoolean() ? translationVal : -translationVal,
                         isFieldCentric.getAsBoolean() ? strafeVal : -strafeVal
-                ).times(Constants.SwerveConstants.maxSpeed * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed)),
-                Rotation2d.fromRadians(rotationVal).times(Constants.SwerveConstants.maxAngularVelocity * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed))
+                ).times(SwerveConstants.maxSpeed),
+                Rotation2d.fromRadians(rotationVal).times(SwerveConstants.maxAngularVelocity)
             ),
             isFieldCentric.getAsBoolean(),
             true

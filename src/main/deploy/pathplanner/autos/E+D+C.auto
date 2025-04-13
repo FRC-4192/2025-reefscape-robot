@@ -5,7 +5,7 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -15,22 +15,48 @@
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "arm hold"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm hold"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "elevator L4"
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
         },
         {
-          "type": "parallel",
+          "type": "race",
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "elevator L4"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "elevator L4"
+                      }
+                    },
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.5
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -43,9 +69,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "score mini"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "score mini"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignToReefL"
+                }
+              }
+            ]
           }
         },
         {
@@ -136,6 +175,12 @@
                       "data": {
                         "name": "arm hold"
                       }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "elevator L4"
+                      }
                     }
                   ]
                 }
@@ -144,7 +189,7 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -262,6 +307,12 @@
                       "data": {
                         "name": "arm hold"
                       }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "elevator L4"
+                      }
                     }
                   ]
                 }
@@ -270,7 +321,7 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "deadline",
           "data": {
             "commands": [
               {
@@ -289,9 +340,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "deadline",
           "data": {
-            "name": "score mini"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "score mini"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignToReefL"
+                }
+              }
+            ]
           }
         },
         {
@@ -301,7 +365,19 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "arm hold"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
                   "name": "elevator L0"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "c to source"
                 }
               }
             ]

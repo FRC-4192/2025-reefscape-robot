@@ -103,7 +103,7 @@ public class Arm extends SubsystemBase {
     }
 
     public Current getCurrent() {
-        return motor.getTorqueCurrent().getValue();
+        return motor.getStatorCurrent().getValue();
     }
 
     public Command setTargetStay(State state) {

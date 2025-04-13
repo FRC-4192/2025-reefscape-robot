@@ -68,7 +68,7 @@ public class RobotContainer {
             arm.setDefaultCommand(arm.stayPID());
     
             take.setDefaultCommand(take.runIntake(
-                    () -> .75 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)
+                    () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - .75 * driver.getLeftTriggerAxis()
             ));
     
             // rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
