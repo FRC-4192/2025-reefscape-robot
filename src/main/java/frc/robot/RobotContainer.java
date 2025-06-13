@@ -192,10 +192,7 @@ public class RobotContainer {
             //l1 and l3 used interchangably
             driverC.povRight().onTrue( arm.setTargetOnly(Arm.State.DUNKING).andThen(elevator.setTargetOnly(Elevator.State.L3)) );
             driverC.povUp().onTrue( arm.setTargetOnly(Arm.State.HOLDING).andThen(elevator.setTargetOnly(Elevator.State.L4)) );
-            driverC.povLeft().onTrue(
-                ((arm.isSafeToLift()) ? new InstantCommand() : arm.setTargetOnly(Arm.State.SCORING))
-                .andThen(elevator.setTargetOnly(Elevator.State.L1))
-                 .andThen(arm.setTargetOnly(Arm.State.INTAKING)) );
+            driverC.povLeft().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L1).andThen(arm.setTargetOnly(Arm.State.INTAKING)));
             driverC.povDown().onTrue( arm.setTargetOnly(Arm.State.SCORING).andThen(elevator.setTargetOnly(Elevator.State.L0)) );
 
 

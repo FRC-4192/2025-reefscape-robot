@@ -64,7 +64,7 @@ public final class Constants {
 
     public static final class LimelightConstants {
         public static final String name = "limelight";
-        public static final AprilTagFieldLayout tagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+        public static final AprilTagFieldLayout tagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
     }
 
     public static final class IntakeConstants {
