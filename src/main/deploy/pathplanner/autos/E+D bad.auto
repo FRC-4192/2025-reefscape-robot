@@ -11,7 +11,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "start to e"
+                  "pathName": null
                 }
               },
               {
@@ -55,7 +55,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "e to source"
+                  "pathName": null
                 }
               },
               {
@@ -76,7 +76,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "source to d"
+            "pathName": null
           }
         },
         {

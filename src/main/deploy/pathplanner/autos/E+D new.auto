@@ -225,7 +225,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "d to source"
+                  "pathName": null
                 }
               }
             ]

@@ -3,16 +3,16 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.138120860927152,
-        "y": 2.901490066225166
+        "x": 3.985554635761589,
+        "y": 2.7852649006622503
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.3602352262478865,
-        "y": 2.442219106448274
+        "x": 3.338891639140808,
+        "y": 2.2752868031807623
       },
       "isLocked": false,
-      "linkedName": "Coral E Bad"
+      "linkedName": "Coral D"
     },
     {
       "anchor": {
@@ -20,32 +20,23 @@
         "y": 0.645
       },
       "prevControl": {
-        "x": 2.2801898574243458,
-        "y": 1.2907379518084312
+        "x": 2.1043744884151163,
+        "y": 1.3449356621901964
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "Source Right"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.102863202545081,
-      "rotationDegrees": -59.99999999999999
-    },
-    {
-      "waypointRelativePos": 0.8960763520678623,
-      "rotationDegrees": -126.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
-    "maxAngularVelocity": 180.0,
-    "maxAngularAcceleration": 360.0,
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.6,
+    "maxAngularVelocity": 300.0,
+    "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
@@ -57,7 +48,7 @@
   "folder": "E+D",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -59.99999999999999
+    "rotation": -119.99999999999999
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

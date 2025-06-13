@@ -43,7 +43,7 @@ import frc.lib.util.COTSTalonFXSwerveConstants;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final double period = .010; // seconds
+    public static final double period = .020; // seconds
     public static final double brownoutVoltage = 6.0;
 
     public static final class OperatorConstants {
@@ -59,7 +59,7 @@ public final class Constants {
         public static final double swerveMaxTurnSpeed = 0.55;
         public static final double swerveSlowSpeed = 0.25;
 
-        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(18.0, 75.0);
+        public static final TrapezoidProfile.Constraints tipConstraints = new TrapezoidProfile.Constraints(15.0, 60.0);
     }
 
     public static final class LimelightConstants {
@@ -73,9 +73,27 @@ public final class Constants {
                 .inverted(false)
                 .smartCurrentLimit(85, 80);
     }
+    public static final class AlgaeIntakeConstants {
+        public static final SparkBaseConfig motorConfig = new SparkFlexConfig()
+                .idleMode(SparkBaseConfig.IdleMode.kCoast)
+                .inverted(false)
+                .smartCurrentLimit(85, 80);
+    }
 
     public static final class ElevatorConstants {
         public static final TalonFXConfiguration elevatorConfig = new TalonFXConfiguration()
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withSupplyCurrentLimit(40)
+                .withStatorCurrentLimit(40))
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast));
+
+        public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.08, 0.42, 0, 0);//.12,.42
+    }
+
+    public static final class ArmConstants {
+        public static final TalonFXConfiguration wristConfig = new TalonFXConfiguration()
             .withCurrentLimits(new CurrentLimitsConfigs()
                 .withSupplyCurrentLimit(35)
                 .withStatorCurrentLimit(30))
@@ -83,21 +101,9 @@ public final class Constants {
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
-        public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.12, 0.42, 0, 0);
-    }
-
-    public static final class ArmConstants {
-        public static final TalonFXConfiguration wristConfig = new TalonFXConfiguration()
-            .withCurrentLimits(new CurrentLimitsConfigs()
-                .withSupplyCurrentLimit(30)
-                .withStatorCurrentLimit(30))
-            .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Coast));
-
         public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
         
-        public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0.141, 0, 0);
+        public static final ArmFeedforward feedforward = new ArmFeedforward(0.00, 0.35, 0, 0);
     }
 
     public static final class GroundConstants {
@@ -120,15 +126,20 @@ public final class Constants {
     }
 
     public static final class HangConstants {
-        public static final TalonFXConfiguration hangConfig = new TalonFXConfiguration()
-            .withCurrentLimits( new CurrentLimitsConfigs()
-                .withSupplyCurrentLimit(30)
-                .withStatorCurrentLimit(30))
-            .withMotorOutput( new MotorOutputConfigs()
-                .withInverted(InvertedValue.Clockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Coast));
+        // public static final TalonFXConfiguration hangConfig = new TalonFXConfiguration()
+        //     .withCurrentLimits( new CurrentLimitsConfigs()
+        //         .withSupplyCurrentLimit(30)
+        //         .withStatorCurrentLimit(30))
+        //     .withMotorOutput( new MotorOutputConfigs()
+        //         .withInverted(InvertedValue.Clockwise_Positive)
+        //         .withNeutralMode(NeutralModeValue.Coast));
 
-        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(0); 
+        public static final SparkBaseConfig hangConfig = new SparkFlexConfig()
+                .idleMode(SparkBaseConfig.IdleMode.kCoast)
+                .inverted(true)
+                .smartCurrentLimit(80, 80);
+
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(90); 
 
         public static final ArmFeedforward feedforward = new ArmFeedforward(0, 0, 0, 0);
     }

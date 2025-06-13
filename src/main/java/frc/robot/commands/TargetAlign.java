@@ -11,7 +11,7 @@ import frc.robot.subsystems.SwerveDrive;
 
 public class TargetAlign extends Command {
     private final SwerveDrive swerve;
-    private final boolean rightSide;
+    private final int pos;
     private final boolean forward;
     private final boolean strafe;
     private final boolean turn;
@@ -23,11 +23,11 @@ public class TargetAlign extends Command {
 
     private static final double bumperLength = .914;
     private static final double bumperWidth = .902;
-    private static final double reefSeparation = .33;
+    private static final double reefSeparation = .355;
         
-    public TargetAlign(SwerveDrive swerve, boolean rightSide, boolean forward, boolean strafe, boolean turn) {
+    public TargetAlign(SwerveDrive swerve, int pos, boolean forward, boolean strafe, boolean turn) {
         this.swerve = swerve;
-        this.rightSide = rightSide;
+        this.pos = pos;
         this.forward = forward;
         this.strafe = strafe;
         this.turn = turn;
@@ -38,8 +38,8 @@ public class TargetAlign extends Command {
 
         addRequirements(swerve);
     }
-    public TargetAlign(SwerveDrive swerve, boolean rightSide) {
-        this(swerve, rightSide, true, true, true);
+    public TargetAlign(SwerveDrive swerve, int pos) {
+        this(swerve, pos, true, true, true);
     }
     
     @Override
@@ -57,7 +57,27 @@ public class TargetAlign extends Command {
         Pose3d pose = LimelightHelpers.getTargetPose3d_RobotSpace(LimelightConstants.name);
         if (pose.getTranslation().getNorm() != 0 && pose.getRotation().getAngle() != 0 && pose.getTranslation().getNorm() < 1.5) {
             double rotationTarget = rotationController.calculate(Math.toDegrees(pose.getRotation().getY()), 0);
-            double translationTarget = -strafeController.calculate(pose.getX(), .5 * (rightSide ? -reefSeparation : reefSeparation));
+            double translationTarget=0.0;
+            switch (pos) {
+                case 0: //center
+                    translationTarget = -strafeController.calculate(pose.getX(), 0);
+
+                    break;
+            
+                case 1: //right
+                   translationTarget = -strafeController.calculate(pose.getX(), .5 *  -reefSeparation );
+
+                    break;
+            
+                case 2: //left
+                    translationTarget = -strafeController.calculate(pose.getX(), .5 *  reefSeparation );
+
+                    break;
+            
+                default:
+                    break;
+            }
+
             double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2);
             swerve.drive(new ChassisSpeeds(
                 forward ? forwardTarget : 0,

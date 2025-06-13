@@ -25,8 +25,8 @@ import static frc.robot.Constants.ElevatorConstants;
 public class Elevator extends SubsystemBase {
     private final TalonFX motor, motor2;
 
-    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(1.5, 3.0);
-    private final ProfiledPIDController controller = new ProfiledPIDController(2.0, 0, 0.01, constraints);
+    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(2, 2.5);
+    private final ProfiledPIDController controller = new ProfiledPIDController(2.0, 0, 0.01, constraints, Constants.period);
     private final PIDController basicController = new PIDController(1.0, 0, 0);
 
     private State state = State.L0;
@@ -34,11 +34,13 @@ public class Elevator extends SubsystemBase {
     private MutDistance offsetOffset = Units.Meters.zero().mutableCopy();
 
     public enum State {
+        ALGAELOW(0.26162),
+        ALGAEHIGH(0.6925),
         L0(0.00),
-        L1(0.05),
-        L2(0.5),
-        L3(0.24),
-        L4(0.75);
+        L1(0.244),
+        L2(0.0),//.167
+        L3(0.153), //.24 
+        L4(0.74); //.75
 
         private final Distance position;
 
@@ -62,7 +64,7 @@ public class Elevator extends SubsystemBase {
         motor2.getConfigurator().apply(ElevatorConstants.elevatorConfig);
         motor2.setControl(new Follower(motor.getDeviceID(), true));
 
-        controller.setTolerance(0.005, .01);
+        controller.setTolerance(0.01, .01);
         controller.reset(getPosition().in(Units.Meters), getVelocity().in(Units.MetersPerSecond));
         basicController.setTolerance(0.02);
 
@@ -88,7 +90,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public boolean isSafeToIntake() {
-        return getState() == State.L0 || getState() == State.L1;
+        return getState() == State.L0 || getState() == State.L1 || getState() == State.L3;
     }
 
     public Distance getPosition() {
@@ -180,7 +182,7 @@ public class Elevator extends SubsystemBase {
         return run(() -> motor.set(getPosition().in(Units.Meters) < .03 ? 0 : feedforward(0))).withName("stay");
     }
     public Command stayPID() {
-        return run(() -> motor.set(getPosition().in(Units.Meters) < .03 ? 0 : basicController.calculate(getPosition().in(Units.Meters), getState().meters()) + feedforward(0))).withName("stay");
+        return run(() -> motor.set(getPosition().in(Units.Meters) < .05 ? 0 : (basicController.calculate(getPosition().in(Units.Meters), getState().meters()) + feedforward(0)))).withName("stay");
     }
 
 

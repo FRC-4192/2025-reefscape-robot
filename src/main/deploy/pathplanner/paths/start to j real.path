@@ -4,31 +4,36 @@
     {
       "anchor": {
         "x": 7.201,
-        "y": 2.726
+        "y": 5.3340000000000005
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.13589521700211,
-        "y": 2.763049434086916
+        "x": 5.395281189262473,
+        "y": 5.3114020357852425
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.138120860927152,
-        "y": 2.901490066225166
+        "x": 5.109,
+        "y": 5.192
       },
       "prevControl": {
-        "x": 5.350498652362492,
-        "y": 2.7695974064406013
+        "x": 5.358083340006612,
+        "y": 5.170610990412117
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "Coral E Bad"
+      "linkedName": "Coral J"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.049133969600564535,
+      "rotationDegrees": 0.0
+    }
+  ],
   "constraintZones": [
     {
       "name": "slow",
@@ -48,18 +53,18 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 3.6,
     "maxAngularVelocity": 300.0,
     "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.1,
-    "rotation": -59.99999999999999
+    "velocity": 0,
+    "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": "E+D",
+  "folder": "J+K",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 0.0

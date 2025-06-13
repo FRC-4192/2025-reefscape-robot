@@ -1,43 +1,48 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
+import edu.wpi.first.math.controller.BangBangController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
+// import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.ElevatorConstants;
-import frc.robot.Constants.GroundConstants;
 import frc.robot.Constants.HangConstants;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import static frc.robot.Constants.GroundConstants;;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;;
 
 public class DeepHang extends SubsystemBase {
-    private final TalonFX motor, motor2;
+    private final SparkFlex motor, motor2;
 
-    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(.5, 2);
-    private final ProfiledPIDController controller = new ProfiledPIDController(.5, 0, .01, constraints);
+    // private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(1, 2);
+    // private final ProfiledPIDController controller = new ProfiledPIDController(1, 0, .01, constraints);
+    private final BangBangController bangBang = new BangBangController(.01);
     private final PIDController simpleController = new PIDController(1, 0, 0);
 
-    public static final double WRIST_RATIO = 1.0/25.0/(12.0/72.0);
+    public static final double WRIST_RATIO = 1.0/25.0*(12.0/72.0);
 
-    private State state = State.STORING;
+    private State state = State.AIMING;
 
     private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        STORING(0),
-        HANGING(0);
+        // STORING(130),/
+        AIMING(83);
+        // HANGING(134);
 
         private final Angle angle;
 
@@ -54,17 +59,17 @@ public class DeepHang extends SubsystemBase {
     }
     
     public DeepHang() {
-        motor = new TalonFX(17);
-        motor2 = new TalonFX(18);
-        motor.getConfigurator().apply(HangConstants.hangConfig);
-        motor2.getConfigurator().apply(HangConstants.hangConfig);
-        motor2.setControl(new Follower(motor.getDeviceID(), true));
+        motor = new SparkFlex(17, MotorType.kBrushless);
+        motor2 = new SparkFlex(18, MotorType.kBrushless);
 
-        controller.setTolerance(.015);
-        controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond));
+        motor.configure(HangConstants.hangConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+        motor2.configure(HangConstants.hangConfig.follow(17,true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+        // controller.setTolerance(.015);
+        // controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond));
         simpleController.setTolerance(.01);
 
-        rezero();
+        // rezero();
         setDefaultCommand(stay());
     }
 
@@ -76,17 +81,14 @@ public class DeepHang extends SubsystemBase {
     }
 
     public Angle getPosition() {
-        return motor.getPosition().getValue().times(WRIST_RATIO).plus(GroundConstants.START_HORIZONTAL_OFFSET).plus(offsetOffset);
+        return Units.Rotations.of(motor.getEncoder().getPosition()).times(WRIST_RATIO).plus(HangConstants.START_HORIZONTAL_OFFSET);
     }
     public AngularVelocity getVelocity() {
-        return motor.getVelocity().getValue().times(WRIST_RATIO);
-    }
-    public AngularAcceleration getAcceleration() {
-        return motor.getAcceleration().getValue().times(WRIST_RATIO);
+        return Units.RPM.of(motor.getEncoder().getVelocity()).times(WRIST_RATIO);
     }
 
-    public Current getCurrent() {
-        return motor.getTorqueCurrent().getValue();
+    public double getCurrent() {
+        return motor.getOutputCurrent() + motor2.getOutputCurrent();
     }
 
     public Command setTargetStay(State state) {
@@ -95,9 +97,10 @@ public class DeepHang extends SubsystemBase {
     public Command setTargetOnly(State state) {
         return runOnce(() -> this.state = state).andThen(runTo());        
     }
-    public Command toggleState() {
-        return runOnce(() -> this.state = state == State.HANGING ? State.STORING : State.HANGING).andThen(runTo());
-    }
+    // public Command toggleState() {
+    //     State choose = state != State.AIMING ? State.AIMING : State.HANGING;
+    //     return runOnce(() -> this.state = choose).andThen(runTo());
+    // }
 
     // public Command adjust(DoubleSupplier radiansPerSecond) {
     //     MutAngle startAngle = getPosition().mutableCopy();
@@ -105,7 +108,7 @@ public class DeepHang extends SubsystemBase {
     // }
 
     public void rezero() {
-        offsetOffset = offsetOffset.plus(ArmConstants.START_HORIZONTAL_OFFSET.minus(getPosition()));
+        offsetOffset = offsetOffset.plus(HangConstants.START_HORIZONTAL_OFFSET.minus(getPosition()));
     }
     public Command rezero(DoubleSupplier power) {
         return runEnd(() -> motor.set(power.getAsDouble()), stay()::execute).finallyDo(() -> rezero());
@@ -118,14 +121,13 @@ public class DeepHang extends SubsystemBase {
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("GW Current", getCurrent().in(Units.Amp));
-        SmartDashboard.putNumber("GW Power", motor.get());
-        SmartDashboard.putNumber("GW Position", getPosition().in(Units.Degree));
-        SmartDashboard.putNumber("GW Velo", getVelocity().in(Units.DegreesPerSecond));
-        SmartDashboard.putNumber("GW Accel", getAcceleration().in(Units.DegreesPerSecondPerSecond));
+        SmartDashboard.putNumber("DH Current", getCurrent());
+        SmartDashboard.putNumber("DH Power", motor.get());
+        SmartDashboard.putNumber("DH Position", getPosition().in(Units.Degrees));
+        SmartDashboard.putNumber("DH Velo", getVelocity().in(DegreesPerSecond));
 
-        SmartDashboard.putNumberArray("GW Pos(array)", new double[] { Math.toDegrees(controller.getSetpoint().position), getPosition().in(Units.Degrees) });
-        SmartDashboard.putNumberArray("GW Vel(array)", new double[] { Math.toDegrees(controller.getSetpoint().velocity), getVelocity().in(Units.DegreesPerSecond) });
+        SmartDashboard.putNumberArray("DH Pos(array)", new double[] { Math.toDegrees(simpleController.getSetpoint()), getPosition().in(Units.Degrees) });
+        SmartDashboard.putNumberArray("DH Vel(array)", new double[] { Math.toDegrees(simpleController.getSetpoint()), getVelocity().in(RadiansPerSecond) });
     }
 
 
@@ -133,15 +135,15 @@ public class DeepHang extends SubsystemBase {
     * Returns a command that runs the arm to the target using motion profiled PID.
     */
     private Command runTo() {
+
         return new FunctionalCommand(
-            // () -> controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)),
-            () -> controller.reset(getVelocity().in(Units.RadiansPerSecond) < .01 ? new TrapezoidProfile.State(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond)) : controller.getSetpoint()),
+            () -> simpleController.reset(),
             () -> motor.set(
-                controller.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians))
-                    + feedforward(getPosition(), controller.getSetpoint().velocity)
+                simpleController.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians))
+                    + feedforward(getPosition(), getVelocity().in(RadiansPerSecond))
             ),
             (interrupted) -> motor.set(interrupted ? motor.get() : feedforward(getPosition(), 0)),
-            controller::atGoal,
+            simpleController::atSetpoint,
             this
         );
     }
@@ -165,6 +167,6 @@ public class DeepHang extends SubsystemBase {
     }
 
     public static double feedforward(Angle position, double velocity) {
-        return GroundConstants.feedforward.calculate(position.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
+        return HangConstants.feedforward.calculate(position.in(Units.Radians), velocity) / RobotController.getBatteryVoltage();
     }
 }

@@ -6,9 +6,11 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.events.TriggerEvent;
 import com.pathplanner.lib.util.FlippingUtil;
 
 import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -45,9 +47,11 @@ public class RobotContainer {
     private final Elevator elevator = new Elevator();
     private final Arm arm = new Arm();
     private final Take take = new Take();
+    private final AlgaeTake atake = new AlgaeTake();
     // private final RampTake rampTake = new RampTake();
     private final Glitter glitter = new Glitter();
-    // private DeepHang deepHang = new DeepHang();
+    private Timer timer =new Timer();
+    private final DeepHang deepHang = new DeepHang();
 
     private final SendableChooser<Command> autoChooser;
     
@@ -69,7 +73,12 @@ public class RobotContainer {
     
             take.setDefaultCommand(take.runIntake(
                     () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - .75 * driver.getLeftTriggerAxis()
-            ));
+            )); 
+            atake.setDefaultCommand(atake.runIntake(() -> .1));
+            
+
+            
+            // deepHang.stay();
     
             // rampTake.setDefaultCommand(rampTake.runTake(() -> .60 * Math.min(Math.max(operator.getRightTriggerAxis() - operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - driver.getLeftTriggerAxis(), -1), 1)));
     
@@ -90,6 +99,8 @@ public class RobotContainer {
             boolean useArm = true;
             boolean useElevator = true;
             boolean useIntake = true;
+
+            SmartDashboard.putNumber("Time in Match",timer.getMatchTime());
     
             NamedCommands.registerCommand("arm hold", useArm ? arm.setTargetOnly(Arm.State.HOLDING).asProxy() : new InstantCommand());
             NamedCommands.registerCommand("arm intake", useArm ? arm.setTargetOnly(Arm.State.INTAKING).asProxy() : new InstantCommand());
@@ -111,8 +122,8 @@ public class RobotContainer {
             ));
             NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(() -> .6)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
             NamedCommands.registerCommand("intake idle", /*useIntake ? rampTake.runIntake(() -> -.075).asProxy() :*/ new InstantCommand());
-            NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, false).raceWith(new WaitCommand(1.5)) : new InstantCommand());
-            NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, true).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+            NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, 2).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+            NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, 1).raceWith(new WaitCommand(1.5)) : new InstantCommand());
             // NamedCommands.registerCommand("score", new InstantCommand());
             // NamedCommands.registerCommand("score", new SequentialCommandGroup(
             //         take.runOuttake(()->1).raceWith(new WaitCommand(1.5)),
@@ -154,17 +165,22 @@ public class RobotContainer {
          * predicate, or via the named factories in {@link
          * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
          * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-         * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+         * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight6
          * joysticks}.
          */
         private void configureBindings() {
+
+            new Trigger( () -> (arm.getState() == Arm.State.ALGAE || op.getYButton() ) ).whileTrue(
+                atake.runIntake(
+                    () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis()
+            )
+            );
+
             driverC.start().onTrue(Commands.runOnce(glitter::toggleDrivePov));
             driverC.leftStick().onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
     
             driverC.rightStick().whileTrue(swerve.run(swerve::lockDrive));
-    
-                
-            
+            driverC.a();               
             
             // driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
     
@@ -175,13 +191,21 @@ public class RobotContainer {
             //     () -> driverC.setRumble(RumbleType.kBothRumble, .5),
             //     () -> driverC.setRumble(RumbleType.kBothRumble, 0)
             // ).until(() -> arm.getState() == Arm.State.SCORING);
+
+            operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, 0.01)
+                .whileTrue(deepHang.runRawFeedforward( () -> 1 * operator.getRightY() ));
     
             
             boolean testing = false;
+
             
-            driverC.leftBumper().whileTrue(testing ? new TargetAlign(swerve, false, false, false, false) : new TargetAlign(swerve, false));
-            driverC.rightBumper().whileTrue(testing ? new TargetAlign(swerve, true, false, false, false) : new TargetAlign(swerve, true));
-    
+            
+            driverC.leftBumper().whileTrue(testing ? new TargetAlign(swerve, 2, false, false, false) : new TargetAlign(swerve, 2));
+            driverC.rightBumper().whileTrue(testing ? new TargetAlign(swerve, 1, false, false, false) : new TargetAlign(swerve, 1));
+            
+            operator.leftBumper().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.ALGAELOW));
+            operator.rightBumper().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.ALGAEHIGH));
+
             driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
     
             operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift() || elevator.getState() == Elevator.State.L1).onTrue(elevator.setTargetOnly(Elevator.State.L0));
@@ -194,30 +218,39 @@ public class RobotContainer {
             // )
             //     .onTrue(elevator.setTargetOnly(Elevator.State.L0))
             //     .onFalse(elevator.setTargetOnly(Elevator.State.L1));
-            // driverC.rightStick().and(driverC.leftStick()).onTrue(deepHang.toggleState());       
 
-        operator.povRight().or(driverC.povLeft()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L3)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
+
+
+
+
+        operator.rightStick().onTrue(deepHang.setTargetOnly(DeepHang.State.AIMING));       
+
+        operator.povRight().or(driverC.povRight()).onTrue(elevator.setTargetOnly(Elevator.State.L3)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
         operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
-
+        operator.povLeft().or(driverC.povLeft()).and(() -> arm.isSafeToLift()).onTrue(elevator.setTargetOnly(Elevator.State.L1));
         operator.a().or(driverC.a()).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
         operator.b().or(driverC.b()).onTrue(arm.setTargetOnly(Arm.State.SCORING));
         operator.x().or(driverC.x()).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
-        operator.y().or(driverC.y()).onTrue(arm.setTargetOnly(Arm.State.DUNKING));
+        driverC.y().onTrue(arm.setTargetOnly(Arm.State.DUNKING));
+
+        operator.y().and(() -> op.getLeftBumperButton()||op.getRightBumperButton()).onTrue(arm.setTargetOnly(Arm.State.ALGAE));
 
         // operator.rightBumper().whileTrue(take.intakeCoral(() -> .7).andThen(Commands.runOnce(() -> arm.setTargetOnly(Arm.State.HOLDING).schedule())));
         // operator.leftBumper().whileTrue(take.outtakeCoral(.5));
 
         operator.leftStick().whileTrue(arm.rezero(() -> .075));
+
+
         // operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
 
         operator.back().onTrue(new AutoScore(
-            new TargetAlign(swerve, false),
+            new TargetAlign(swerve, 2),
             elevator,
             arm,
             take
         ));
         operator.start().onTrue(new AutoScore(
-            new TargetAlign(swerve, true),
+            new TargetAlign(swerve, 1),
             elevator,
             arm,
             take

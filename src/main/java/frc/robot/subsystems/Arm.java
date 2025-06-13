@@ -23,8 +23,8 @@ import static frc.robot.Constants.ArmConstants;
 public class Arm extends SubsystemBase {
     private final TalonFX motor;
 
-    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(8, 15);
-    private final ProfiledPIDController controller = new ProfiledPIDController(1.6, 0, .01, constraints);
+    private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(7.3, 10.8);
+    private final ProfiledPIDController controller = new ProfiledPIDController(1.6, 0, .01, constraints, Constants.period);
     private final PIDController simpleController = new PIDController(.5, 0, 0);
 
     public static final double WRIST_RATIO = 1./16/4.5;
@@ -35,12 +35,12 @@ public class Arm extends SubsystemBase {
     private Angle offsetOffset = Units.Degrees.zero();
 
     public enum State {
-        INTAKING(-72),
-        HOLDING(110),
-        DUNKING(90 - 32.211),
-        SCORING(99),
+        INTAKING(-85),
+        HOLDING(94),
+        DUNKING(82),//58
+        SCORING(50),
         EJECTING(-80), // L1 scoring or throwing away unwanted coral
-        ALGAE(-55);
+        ALGAE(-47);
 
         private final Angle angle;
 
@@ -89,8 +89,11 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isSafeToLift() {
-        return getState() == State.HOLDING || getState() == State.SCORING;
+        return getState() == State.HOLDING || getState() == State.SCORING || getState() == State.DUNKING;
     }
+
+
+    
 
     public Angle getPosition() {
         return motor.getPosition().getValue().times(WRIST_RATIO).plus(ArmConstants.START_HORIZONTAL_OFFSET).plus(offsetOffset);

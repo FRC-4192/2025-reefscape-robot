@@ -9,7 +9,7 @@
       "prevControl": null,
       "nextControl": {
         "x": 3.3693493146165747,
-        "y": 2.5896025769060627
+        "y": 2.589602576906062
       },
       "isLocked": false,
       "linkedName": "Coral C"
@@ -34,7 +34,7 @@
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
-    "maxAcceleration": 4.0,
+    "maxAcceleration": 3.6,
     "maxAngularVelocity": 300.0,
     "maxAngularAcceleration": 600.0,
     "nominalVoltage": 12.0,
