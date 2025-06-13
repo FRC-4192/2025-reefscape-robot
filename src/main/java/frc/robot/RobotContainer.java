@@ -74,7 +74,7 @@ public class RobotContainer {
             take.setDefaultCommand(take.runIntake(
                     () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - .75 * driver.getLeftTriggerAxis()
             )); 
-            atake.setDefaultCommand(atake.runIntake(() -> .1));
+            atake.setDefaultCommand(atake.runIntake(() -> .0));
             
 
             
@@ -170,51 +170,107 @@ public class RobotContainer {
          */
         private void configureBindings() {
 
-            new Trigger( () -> (arm.getState() == Arm.State.ALGAE || op.getYButton() ) ).whileTrue(
-                atake.runIntake(
-                    () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis()
-            )
-            );
-
+            //swerve
             driverC.start().onTrue(Commands.runOnce(glitter::toggleDrivePov));
             driverC.leftStick().onTrue(Commands.runOnce(glitter::toggleDriveSpeed));
-    
+        
             driverC.rightStick().whileTrue(swerve.run(swerve::lockDrive));
             driverC.a();               
-            
-            // driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
-    
-            // operator.povLeft().whileTrue(new TargetAlign(swerve));
-            // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
-            // new Trigger(() -> driver.getPOV() == 90).whileTrue(new TargetAlign(swerve, true));
-            // Command rumbleD = Commands.startEnd(
-            //     () -> driverC.setRumble(RumbleType.kBothRumble, .5),
-            //     () -> driverC.setRumble(RumbleType.kBothRumble, 0)
-            // ).until(() -> arm.getState() == Arm.State.SCORING);
-
-            operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, 0.01)
-                .whileTrue(deepHang.runRawFeedforward( () -> 1 * operator.getRightY() ));
-    
-            
+        
             boolean testing = false;
-
-            
-            
             driverC.leftBumper().whileTrue(testing ? new TargetAlign(swerve, 2, false, false, false) : new TargetAlign(swerve, 2));
             driverC.rightBumper().whileTrue(testing ? new TargetAlign(swerve, 1, false, false, false) : new TargetAlign(swerve, 1));
-            
-            operator.leftBumper().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.ALGAELOW));
-            operator.rightBumper().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.ALGAEHIGH));
-
             driverC.back().onTrue(swerve.runOnce(swerve::zeroHeading));
-    
-            operator.povDown().or(driverC.povDown()).and(() -> arm.isSafeToLift() || elevator.getState() == Elevator.State.L1).onTrue(elevator.setTargetOnly(Elevator.State.L0));
-            // driverC.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L1));
             
-            // new Trigger(() -> (driver.getLeftX()!=0
-            //     ||driver.getLeftY()!=0
-            //     ||driver.getRightX()!=0)
-            //     &&(elevator.getState()==Elevator.State.L1||elevator.getState()==Elevator.State.L0)
+            // arm
+            driverC.y().onTrue(arm.setTargetOnly(Arm.State.DUNKING));
+            
+            //idk
+            driverC.leftTrigger(.02).or(operator.leftTrigger(.02)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name)));
+            
+            //elevator
+            //l1 and l3 used interchangably
+            driverC.povRight().onTrue( arm.setTargetOnly(Arm.State.DUNKING).andThen(elevator.setTargetOnly(Elevator.State.L3)) );
+            driverC.povUp().onTrue( arm.setTargetOnly(Arm.State.HOLDING).andThen(elevator.setTargetOnly(Elevator.State.L4)) );
+            driverC.povLeft().onTrue(
+                ((arm.isSafeToLift()) ? new InstantCommand() : arm.setTargetOnly(Arm.State.SCORING))
+                .andThen(elevator.setTargetOnly(Elevator.State.L1))
+                 .andThen(arm.setTargetOnly(Arm.State.INTAKING)) );
+            driverC.povDown().onTrue( arm.setTargetOnly(Arm.State.SCORING).andThen(elevator.setTargetOnly(Elevator.State.L0)) );
+
+
+
+
+
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            
+            //Elevator
+            operator.leftBumper().onTrue(
+                arm.setTargetOnly(Arm.State.SCORING).andThen(
+                    elevator.setTargetOnly(Elevator.State.ALGAELOW)
+                ).andThen(
+                    arm.setTargetOnly(Arm.State.ALGAE)
+                )
+            ); 
+
+            operator.rightBumper().onTrue(
+                arm.setTargetOnly(Arm.State.SCORING).andThen(
+                    elevator.setTargetOnly(Elevator.State.ALGAEHIGH)
+                ).andThen(
+                    arm.setTargetOnly(Arm.State.ALGAE)
+                )
+            );
+
+            operator.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L3));
+            operator.povUp().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4));
+            operator.povLeft().onTrue(elevator.setTargetOnly(Elevator.State.L1));
+            operator.povDown().and(() -> arm.isSafeToLift()).onTrue(elevator.setTargetOnly(Elevator.State.L0));
+            
+            
+            //arm
+            operator.a().or(driverC.a()).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
+            operator.b().or(driverC.b()).onTrue(arm.setTargetOnly(Arm.State.SCORING));
+            operator.x().or(driverC.x()).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
+            operator.leftStick().whileTrue(arm.rezero(() -> .075));
+            operator.y().onTrue(arm.setTargetOnly(Arm.State.ALGAE));
+            
+            //hang
+            operator.rightStick().onTrue(deepHang.setTargetOnly(DeepHang.State.AIMING));       
+            operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, 0.01)
+            .whileTrue(deepHang.runRawFeedforward( () -> 1 * operator.getRightY() ));
+            
+            //algae intake
+            operator.axisMagnitudeGreaterThan(XboxController.Axis.kLeftY.value, 0.01)
+            .whileTrue(atake.runIntake( () -> 1 * operator.getRightY() ))
+            .whileFalse(atake.runIntake( ()-> .1 ));
+
+
+            // new Trigger( () -> (arm.getState() == Arm.State.ALGAE || op.getYButton() ) ).whileTrue(
+            //     atake.runIntake(
+            //         () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis()
+            //     )
+            // ).whileFalse(
+            //     atake.runIntake(()-> .1 )
+            // );
+                    
+                    
+
+
+                    // driverC.y().onTrue(swerve.runOnce(swerve::toggleBrakes));
+                    
+                    // operator.povLeft().whileTrue(new TargetAlign(swerve));
+                    // new Trigger(() -> driver.getPOV() == 270).whileTrue(new TargetAlign(swerve, false));
+                    // new Trigger(() -> driver.getPOV() == 90).whileTrue(new TargetAlign(swerve, true));
+                    // Command rumbleD = Commands.startEnd(
+                        //     () -> driverC.setRumble(RumbleType.kBothRumble, .5),
+                        //     () -> driverC.setRumble(RumbleType.kBothRumble, 0)
+                        // ).until(() -> arm.getState() == Arm.State.SCORING);
+                    // driverC.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L1));
+                    
+                    // new Trigger(() -> (driver.getLeftX()!=0
+                    //     ||driver.getLeftY()!=0
+                    //     ||driver.getRightX()!=0)
+                //     &&(elevator.getState()==Elevator.State.L1||elevator.getState()==Elevator.State.L0)
             // )
             //     .onTrue(elevator.setTargetOnly(Elevator.State.L0))
             //     .onFalse(elevator.setTargetOnly(Elevator.State.L1));
@@ -223,22 +279,11 @@ public class RobotContainer {
 
 
 
-        operator.rightStick().onTrue(deepHang.setTargetOnly(DeepHang.State.AIMING));       
 
-        operator.povRight().or(driverC.povRight()).onTrue(elevator.setTargetOnly(Elevator.State.L3)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
-        operator.povUp().or(driverC.povUp()).and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4)).onFalse(arm.setTargetOnly(Arm.State.SCORING));
-        operator.povLeft().or(driverC.povLeft()).and(() -> arm.isSafeToLift()).onTrue(elevator.setTargetOnly(Elevator.State.L1));
-        operator.a().or(driverC.a()).and(elevator::isSafeToIntake).onTrue(arm.setTargetOnly(Arm.State.INTAKING));
-        operator.b().or(driverC.b()).onTrue(arm.setTargetOnly(Arm.State.SCORING));
-        operator.x().or(driverC.x()).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
-        driverC.y().onTrue(arm.setTargetOnly(Arm.State.DUNKING));
-
-        operator.y().and(() -> op.getLeftBumperButton()||op.getRightBumperButton()).onTrue(arm.setTargetOnly(Arm.State.ALGAE));
 
         // operator.rightBumper().whileTrue(take.intakeCoral(() -> .7).andThen(Commands.runOnce(() -> arm.setTargetOnly(Arm.State.HOLDING).schedule())));
         // operator.leftBumper().whileTrue(take.outtakeCoral(.5));
 
-        operator.leftStick().whileTrue(arm.rezero(() -> .075));
 
 
         // operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
@@ -256,7 +301,6 @@ public class RobotContainer {
             take
         ));
 
-        driverC.leftTrigger(.02).or(operator.leftTrigger(.02)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name)));
 
         // led testing
         // operator.leftBumper().onTrue(glitter.dereasePWM()

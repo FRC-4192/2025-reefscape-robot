@@ -27,7 +27,7 @@ public class Arm extends SubsystemBase {
     private final ProfiledPIDController controller = new ProfiledPIDController(1.6, 0, .01, constraints, Constants.period);
     private final PIDController simpleController = new PIDController(.5, 0, 0);
 
-    public static final double WRIST_RATIO = 1./16/4.5;
+    public static final double WRIST_RATIO = 1./25./4.5;
 
     private State state = State.HOLDING;
     private double adjust = 0.0;
@@ -36,9 +36,9 @@ public class Arm extends SubsystemBase {
 
     public enum State {
         INTAKING(-85),
-        HOLDING(94),
-        DUNKING(82),//58
-        SCORING(50),
+        HOLDING(94),//l4 or algae scoring
+        DUNKING(82),//l3
+        SCORING(50),//l2
         EJECTING(-80), // L1 scoring or throwing away unwanted coral
         ALGAE(-47);
 
@@ -115,6 +115,7 @@ public class Arm extends SubsystemBase {
     }
     public Command setTargetOnly(State state) {
         adjust = 0;
+        
         return runOnce(() -> this.state = state).andThen(runTo());        
     }
 
