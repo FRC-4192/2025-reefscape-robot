@@ -63,8 +63,7 @@ public class DeepHang extends SubsystemBase {
         motor2 = new SparkFlex(18, MotorType.kBrushless);
 
         motor.configure(HangConstants.hangConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-        motor2.configure(HangConstants.hangConfig.follow(17,true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-
+        motor2.configure(HangConstants.hangConfig.follow(motor,true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
         // controller.setTolerance(.015);
         // controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond));
         simpleController.setTolerance(.01);
@@ -89,6 +88,10 @@ public class DeepHang extends SubsystemBase {
 
     public double getCurrent() {
         return motor.getOutputCurrent() + motor2.getOutputCurrent();
+    }
+
+    public double getMotorCurrent(int x){
+        return (x==1) ?  motor.getOutputCurrent() : motor2.getOutputCurrent();
     }
 
     public Command setTargetStay(State state) {
@@ -121,6 +124,8 @@ public class DeepHang extends SubsystemBase {
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("DH Current m1", getMotorCurrent(1));
+        SmartDashboard.putNumber("DH Current m2", getMotorCurrent(2));
         SmartDashboard.putNumber("DH Current", getCurrent());
         SmartDashboard.putNumber("DH Power", motor.get());
         SmartDashboard.putNumber("DH Position", getPosition().in(Units.Degrees));
@@ -140,8 +145,9 @@ public class DeepHang extends SubsystemBase {
             () -> simpleController.reset(),
             () -> motor.set(
                 simpleController.calculate(getPosition().in(Units.Radians), getTarget().in(Units.Radians))
-                    + feedforward(getPosition(), getVelocity().in(RadiansPerSecond))
-            ),
+                    + feedforward(getPosition(), getVelocity().in(RadiansPerSecond)))
+               
+            ,
             (interrupted) -> motor.set(interrupted ? motor.get() : feedforward(getPosition(), 0)),
             simpleController::atSetpoint,
             this

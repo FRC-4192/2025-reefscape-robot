@@ -37,9 +37,9 @@ public class Elevator extends SubsystemBase {
         ALGAELOW(0.26162),
         ALGAEHIGH(0.6925),
         L0(0.00),
-        L1(0.244),
+        L1(0.231),
         L2(0.0),//.167
-        L3(0.153), //.24 
+        L3(0.167), //.24 
         L4(0.74); //.75
 
         private final Distance position;

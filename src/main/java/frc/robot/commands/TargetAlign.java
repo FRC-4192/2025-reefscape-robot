@@ -80,9 +80,9 @@ public class TargetAlign extends Command {
 
             double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2);
             swerve.drive(new ChassisSpeeds(
-                forward ? forwardTarget : 0,
-                strafe ? translationTarget : 0,
-                turn ? rotationTarget : 0
+                forward ? -forwardTarget : 0,
+                strafe ? -translationTarget : 0,
+                turn ? -rotationTarget : 0
             ));
         }
         SmartDashboard.putNumber("Vision Angle", Math.toDegrees(pose.getRotation().getX()));

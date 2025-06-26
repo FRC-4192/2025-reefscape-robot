@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.595279456193354,
+        "y": 3.995175604229607
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.504818192466605,
+        "y": 4.004915251421596
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.905230362537765,
+        "y": 3.995175604229607
+      },
+      "prevControl": {
+        "x": 5.655324072705478,
+        "y": 3.98833116836817
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "G-H Algae"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.6,
+    "maxAngularVelocity": 300.0,
+    "maxAngularAcceleration": 600.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "reversed": false,
+  "folder": "Algae stuff",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

@@ -47,7 +47,7 @@ public class RobotContainer {
     private final Elevator elevator = new Elevator();
     private final Arm arm = new Arm();
     private final Take take = new Take();
-    private final AlgaeTake atake = new AlgaeTake();
+    // private final AlgaeTake atake = new AlgaeTake();
     // private final RampTake rampTake = new RampTake();
     private final Glitter glitter = new Glitter();
     private Timer timer =new Timer();
@@ -72,9 +72,9 @@ public class RobotContainer {
             arm.setDefaultCommand(arm.stayPID());
     
             take.setDefaultCommand(take.runIntake(
-                    () -> operator.getRightTriggerAxis() - .75 * operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - .75 * driver.getLeftTriggerAxis()
+                    () -> operator.getRightTriggerAxis() - 1 * operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - 1 * driver.getLeftTriggerAxis()
             )); 
-            atake.setDefaultCommand(atake.runIntake(() -> .0));
+            // atake.setDefaultCommand(atake.runIntake(() -> .1));
             
 
             
@@ -103,27 +103,45 @@ public class RobotContainer {
             SmartDashboard.putNumber("Time in Match",timer.getMatchTime());
     
             NamedCommands.registerCommand("arm hold", useArm ? arm.setTargetOnly(Arm.State.HOLDING).asProxy() : new InstantCommand());
+            NamedCommands.registerCommand("arm score", useArm ? arm.setTargetOnly(Arm.State.SCORING).asProxy() : new InstantCommand());
             NamedCommands.registerCommand("arm intake", useArm ? arm.setTargetOnly(Arm.State.INTAKING).asProxy() : new InstantCommand());
+            NamedCommands.registerCommand("arm algae", useArm ? arm.setTargetOnly(Arm.State.ALGAE).asProxy() : new InstantCommand());
             NamedCommands.registerCommand("elevator L4", useElevator ? elevator.setTargetOnly(Elevator.State.L4).asProxy() : new InstantCommand());
             NamedCommands.registerCommand("elevator L1", useElevator ? elevator.setTargetOnly(Elevator.State.L1).asProxy() : new InstantCommand());
             NamedCommands.registerCommand("elevator L0", useElevator ? elevator.setTargetOnly(Elevator.State.L0).asProxy() : new InstantCommand());
+            NamedCommands.registerCommand("elevator aHigh", useElevator ? elevator.setTargetOnly(Elevator.State.ALGAEHIGH).asProxy() : new InstantCommand());
+            NamedCommands.registerCommand("elevator aLow", useElevator ? elevator.setTargetOnly(Elevator.State.ALGAELOW).asProxy() : new InstantCommand());
             NamedCommands.registerCommand("score", new SequentialCommandGroup(
                 // take.runTakeOnce(0).asProxy().alongWith(rampTake.runTakeOnce(0).asProxy()),
-                useArm ? arm.setTargetOnly(Arm.State.SCORING).asProxy() : new InstantCommand(),
+                useArm ? arm.setTargetOnly(Arm.State.HOLDING).asProxy() : new InstantCommand(),
                 useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.6)).asProxy() : new InstantCommand(),
                 useIntake ? take.runTakeOnce(0).raceWith(Commands.waitSeconds(.01)).asProxy() : new InstantCommand(),
                 useArm ? arm.setTargetOnly(Arm.State.HOLDING).asProxy().alongWith(elevator.setTargetOnly(Elevator.State.L0).asProxy()) : new InstantCommand()
                 // useElevator ? elevator.setTarget2(Elevator.State.L0).asProxy() : new InstantCommand()
             ));
             NamedCommands.registerCommand("score mini", new SequentialCommandGroup(
-                useArm ? arm.setTargetOnly(Arm.State.SCORING).asProxy() : new InstantCommand(),
+                useArm ? arm.setTargetOnly(Arm.State.HOLDING).asProxy() : new InstantCommand(),
                 useIntake ? take.runOuttake(()-> 1).raceWith(new WaitCommand(0.5)).asProxy() : new InstantCommand(),
                 useIntake ? take.runTakeOnce(0).raceWith(Commands.waitSeconds(.01)).asProxy() : new InstantCommand()
             ));
+
             NamedCommands.registerCommand("intakeCoral", useIntake ? take.intakeCoral(() -> .6)/* .raceWith(rampTake.runIntake(() -> .3))*/.asProxy() : new InstantCommand() );
+            // NamedCommands.registerCommand("intakeAlgae", useIntake ? atake.runIntake(() -> .9).raceWith(Commands.waitSeconds(1.4)).asProxy() : new InstantCommand() );
+            // NamedCommands.registerCommand("outtakeAlgae", useIntake ? atake.runOuttake(() -> 1).raceWith(Commands.waitSeconds(2)).asProxy() : new InstantCommand() );
             NamedCommands.registerCommand("intake idle", /*useIntake ? rampTake.runIntake(() -> -.075).asProxy() :*/ new InstantCommand());
+            NamedCommands.registerCommand("algae high", new SequentialCommandGroup(
+                useArm ? arm.setTargetOnly(Arm.State.SCORING).asProxy() : new InstantCommand(),
+                (useArm && useElevator) ? elevator.setTargetOnly(Elevator.State.ALGAEHIGH) : new InstantCommand(),
+                useArm ? arm.setTargetOnly(Arm.State.ALGAE).asProxy() : new InstantCommand()
+            ));
+            NamedCommands.registerCommand("algae low", new SequentialCommandGroup(
+                useArm ? arm.setTargetOnly(Arm.State.SCORING).asProxy() : new InstantCommand(),
+                (useArm && useElevator) ? elevator.setTargetOnly(Elevator.State.ALGAELOW) : new InstantCommand(),
+                useArm ? arm.setTargetOnly(Arm.State.ALGAE).asProxy() : new InstantCommand()
+            ));
             NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, 2).raceWith(new WaitCommand(1.5)) : new InstantCommand());
             NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, 1).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+            NamedCommands.registerCommand("alignToReefC", true ? new TargetAlign(swerve, 0).raceWith(new WaitCommand(1.5)) : new InstantCommand());
             // NamedCommands.registerCommand("score", new InstantCommand());
             // NamedCommands.registerCommand("score", new SequentialCommandGroup(
             //         take.runOuttake(()->1).raceWith(new WaitCommand(1.5)),
@@ -190,10 +208,44 @@ public class RobotContainer {
             
             //elevator
             //l1 and l3 used interchangably
-            driverC.povRight().onTrue( arm.setTargetOnly(Arm.State.DUNKING).andThen(elevator.setTargetOnly(Elevator.State.L3)) );
-            driverC.povUp().onTrue( arm.setTargetOnly(Arm.State.HOLDING).andThen(elevator.setTargetOnly(Elevator.State.L4)) );
-            driverC.povLeft().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L1).andThen(arm.setTargetOnly(Arm.State.INTAKING)));
-            driverC.povDown().onTrue( arm.setTargetOnly(Arm.State.SCORING).andThen(elevator.setTargetOnly(Elevator.State.L0)) );
+
+                //l4
+                driverC.povUp().onTrue( 
+                    new SequentialCommandGroup(
+                        arm.setTargetOnly(Arm.State.HOLDING).asProxy(),
+                        elevator.setTargetOnly(Elevator.State.L4).asProxy()
+                    )
+                );
+
+                //l3
+                driverC.povRight().onTrue(
+                    new SequentialCommandGroup(
+                        arm.setTargetOnly(Arm.State.DUNKING).asProxy(),
+                        elevator.setTargetOnly(Elevator.State.L0).asProxy()
+                    )
+                );
+
+                //l2
+                driverC.povLeft().onTrue(
+                    new SequentialCommandGroup(
+                        arm.setTargetOnly(Arm.State.SCORING).asProxy(),
+                        elevator.setTargetOnly(Elevator.State.L0).asProxy()
+                    )
+                );
+
+                driverC.povDown().onTrue( 
+                    new SequentialCommandGroup(
+                        arm.setTargetOnly(Arm.State.SCORING).asProxy(),
+                        elevator.setTargetOnly(Elevator.State.L0).asProxy(),
+                        arm.setTargetOnly(Arm.State.INTAKING).asProxy()
+                    )
+                );
+
+
+            // driverC.povRight().onTrue( arm.setTargetOnly(Arm.State.DUNKING).andThen(elevator.setTargetOnly(Elevator.State.L3)) );
+            // driverC.povUp().onTrue( arm.setTargetOnly(Arm.State.HOLDING).andThen(elevator.setTargetOnly(Elevator.State.L4)) );
+            // driverC.povLeft().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L1));
+            // driverC.povDown().onTrue( arm.setTargetOnly(Arm.State.SCORING).andThen(elevator.setTargetOnly(Elevator.State.L0)) );
 
 
 
@@ -202,21 +254,27 @@ public class RobotContainer {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             
             //Elevator
-            operator.leftBumper().onTrue(
-                arm.setTargetOnly(Arm.State.SCORING).andThen(
-                    elevator.setTargetOnly(Elevator.State.ALGAELOW)
-                ).andThen(
-                    arm.setTargetOnly(Arm.State.ALGAE)
-                )
-            ); 
+            // operator.leftBumper().onTrue(
+            //     // arm.setTargetOnly(Arm.State.SCORING).andThen(
+            //         elevator.setTargetOnly(Elevator.State.ALGAELOW)
+            //     // ).andThen(
+            //     //     arm.setTargetOnly(Arm.State.ALGAE)
+            //     // )
+            // ); 
 
-            operator.rightBumper().onTrue(
-                arm.setTargetOnly(Arm.State.SCORING).andThen(
-                    elevator.setTargetOnly(Elevator.State.ALGAEHIGH)
-                ).andThen(
-                    arm.setTargetOnly(Arm.State.ALGAE)
-                )
-            );
+            
+
+            // operator.rightBumper().onTrue(
+            //     // arm.setTargetOnly(Arm.State.SCORING).andThen(
+            //         elevator.setTargetOnly(Elevator.State.ALGAEHIGH)
+            //     // ).andThen(
+            //     //     arm.setTargetOnly(Arm.State.ALGAE)
+            //     // )
+            // );
+
+            // operator.rightBumper().onTrue(
+                
+            // );
 
             operator.povRight().onTrue(elevator.setTargetOnly(Elevator.State.L3));
             operator.povUp().and(arm::isSafeToLift).onTrue(elevator.setTargetOnly(Elevator.State.L4));
@@ -229,17 +287,17 @@ public class RobotContainer {
             operator.b().or(driverC.b()).onTrue(arm.setTargetOnly(Arm.State.SCORING));
             operator.x().or(driverC.x()).onTrue(arm.setTargetOnly(Arm.State.HOLDING));
             operator.leftStick().whileTrue(arm.rezero(() -> .075));
-            operator.y().onTrue(arm.setTargetOnly(Arm.State.ALGAE));
+            // operator.y().onTrue(arm.setTargetOnly(Arm.State.ALGAE));
             
             //hang
             operator.rightStick().onTrue(deepHang.setTargetOnly(DeepHang.State.AIMING));       
-            operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, 0.01)
+            operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, 0.009)
             .whileTrue(deepHang.runRawFeedforward( () -> 1 * operator.getRightY() ));
             
             //algae intake
-            operator.axisMagnitudeGreaterThan(XboxController.Axis.kLeftY.value, 0.01)
-            .whileTrue(atake.runIntake( () -> 1 * operator.getRightY() ))
-            .whileFalse(atake.runIntake( ()-> .1 ));
+            // operator.axisMagnitudeGreaterThan(XboxController.Axis.kLeftY.value, 0.01)
+            // .whileTrue(atake.runIntake( () -> 1 * operator.getLeftY() ))
+            // .whileFalse(atake.runIntake( ()-> .1 ));
 
 
             // new Trigger( () -> (arm.getState() == Arm.State.ALGAE || op.getYButton() ) ).whileTrue(
@@ -285,18 +343,18 @@ public class RobotContainer {
 
         // operator.axisMagnitudeGreaterThan(XboxController.Axis.kRightY.value, .05).whileTrue(arm.adjust(() -> -operator.getRightY()).finallyDo(arm::stay));
 
-        operator.back().onTrue(new AutoScore(
-            new TargetAlign(swerve, 2),
-            elevator,
-            arm,
-            take
-        ));
-        operator.start().onTrue(new AutoScore(
-            new TargetAlign(swerve, 1),
-            elevator,
-            arm,
-            take
-        ));
+        // operator.back().onTrue(new AutoScore(
+        //     new TargetAlign(swerve, 2),
+        //     elevator,
+        //     arm,
+        //     take
+        // ));
+        // operator.start().onTrue(new AutoScore(
+        //     new TargetAlign(swerve, 1),
+        //     elevator,
+        //     arm,
+        //     take
+        // ));
 
 
         // led testing
@@ -314,14 +372,14 @@ public class RobotContainer {
         // tester.leftBumper().and(tester.b()).whileTrue(elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         // tester.leftBumper().and(tester.x()).whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kForward));
         // tester.leftBumper().and(tester.y()).whileTrue(elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        elevator.setDefaultCommand(elevator.runRawFeedforward(() -> -tester.getLeftY()));
+        // elevator.setDefaultCommand(elevator.runRawFeedforward(() -> -tester.getLeftY()));
 
         // arm
         // tester.rightBumper().and(tester.a()).whileTrue(arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
         // tester.rightBumper().and(tester.b()).whileTrue(arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         // tester.rightBumper().and(tester.x()).whileTrue(arm.sysIdDynamic(SysIdRoutine.Direction.kForward));
         // tester.rightBumper().and(tester.y()).whileTrue(arm.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        arm.setDefaultCommand(arm.runRawFeedforward(() -> -tester.getRightY()));
+        // arm.setDefaultCommand(arm.runRawFeedforward(() -> -tester.getRightY()));
     }
 
     /**

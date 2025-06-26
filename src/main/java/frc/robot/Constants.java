@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotation;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -72,6 +73,15 @@ public final class Constants {
                 .idleMode(SparkBaseConfig.IdleMode.kCoast)
                 .inverted(false)
                 .smartCurrentLimit(85, 80);
+
+        public static final TalonFXConfiguration takeConfig = new TalonFXConfiguration()
+            .withCurrentLimits(new CurrentLimitsConfigs()
+                .withSupplyCurrentLimit(85)
+                .withStatorCurrentLimit(80))
+            .withMotorOutput(new MotorOutputConfigs()
+                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withNeutralMode(NeutralModeValue.Coast)
+            );
     }
     public static final class AlgaeIntakeConstants {
         public static final SparkBaseConfig motorConfig = new SparkFlexConfig()
@@ -101,7 +111,7 @@ public final class Constants {
                 .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
-        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(116.43310546875); // cad measured is ~116.852
+        public static final Angle START_HORIZONTAL_OFFSET = Degrees.of(123.01875000000001); // cad measured is ~116.852
         
         public static final ArmFeedforward feedforward = new ArmFeedforward(0.00, 0.35, 0, 0);
     }
@@ -202,11 +212,12 @@ public final class Constants {
 
         // order: fl, fr, bl, br
         public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
-            new ModuleConstants(1, 8, 10, Rotation2d.fromDegrees(-30.498046875)),
-            new ModuleConstants(7, 6, 11, Rotation2d.fromDegrees(28.652343749999996)),
-            new ModuleConstants(5, 4, 12, Rotation2d.fromDegrees(-118.30078125)),
-            new ModuleConstants(3, 2, 13, Rotation2d.fromDegrees(-161.71875))
-        };
+            new ModuleConstants(1, 8, 10, Rotation2d.fromDegrees(148.88)), //-30.4980046875
+            new ModuleConstants(7, 6, 11, Rotation2d.fromDegrees(-151.73)), //28.652343749999996
+            new ModuleConstants(5, 4, 12, Rotation2d.fromDegrees(-68.64)), //-118.30078125, 114
+            new ModuleConstants(3, 2, 13, Rotation2d.fromDegrees(159.69) //-161.71875, -23
+            )
+            };
 
         public static final class ModuleConstants {
             public final int driveMotorID;

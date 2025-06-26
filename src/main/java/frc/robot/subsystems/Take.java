@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,6 +17,7 @@ import static frc.robot.Constants.IntakeConstants;
 
 public class Take extends SubsystemBase {
     private final SparkFlex take;
+    // private final TalonFX take;
     private double originalCurrent;
     private double filteredCurrent;
 
@@ -25,15 +27,24 @@ public class Take extends SubsystemBase {
     public Take() {
         take = new SparkFlex(16, MotorType.kBrushless);
         take.configure(IntakeConstants.motorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+
+        // take = new TalonFX(16);
+        // take.getConfigurator().apply(IntakeConstants.takeConfig);
+
     }
 
     @Override
     public void periodic() {
         originalCurrent = take.getOutputCurrent();
+        // originalCurrent = take.getTorqueCurrent().getValueAsDouble();
         filteredCurrent = filter.update(originalCurrent);
 
         SmartDashboard.putNumber("Take Current", originalCurrent);
         SmartDashboard.putNumber("Take Current w/ Low Pass Filter", filteredCurrent);
+        SmartDashboard.putNumber("Take Velocity", take.getEncoder().getVelocity());
+        // SmartDashboard.putNumber("Take Velocity", take.getVelocity().getValueAsDouble());
+
+
     }
 
 

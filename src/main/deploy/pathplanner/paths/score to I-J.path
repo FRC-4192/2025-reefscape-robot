@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.502492447129908,
+        "y": 5.416805135951661
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.7196563444108754,
+        "y": 5.386980740181269
+      },
+      "isLocked": false,
+      "linkedName": "Algae Score"
+    },
+    {
+      "anchor": {
+        "x": 5.202700151057402,
+        "y": 5.20140672205438
+      },
+      "prevControl": {
+        "x": 5.547337613293052,
+        "y": 5.685224697885196
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "I-J Algae"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.6,
+    "maxAngularVelocity": 300.0,
+    "maxAngularAcceleration": 600.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 59.99999999999999
+  },
+  "reversed": false,
+  "folder": "Algae stuff",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

@@ -11,13 +11,44 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": null
+                  "pathName": "start to G-H"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "arm hold"
+                  "name": "arm algae"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "elevator aLow"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignToReefC"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "intakeAlgae"
                 }
               }
             ]
@@ -28,15 +59,28 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "path",
                 "data": {
-                  "name": "elevator L4"
+                  "pathName": "G-H to score"
                 }
               },
               {
-                "type": "named",
+                "type": "sequential",
                 "data": {
-                  "name": "alignToReefR"
+                  "commands": [
+                    {
+                      "type": "wait",
+                      "data": {
+                        "waitTime": 0.8
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm hold"
+                      }
+                    }
+                  ]
                 }
               }
             ]
@@ -45,7 +89,13 @@
         {
           "type": "named",
           "data": {
-            "name": "score mini"
+            "name": "elevator L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtakeAlgae"
           }
         },
         {
@@ -53,28 +103,15 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "arm hold"
-                      }
-                    },
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0.3
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "arm intake"
-                      }
-                    }
-                  ]
+                  "pathName": "score to I-J"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "arm score"
                 }
               },
               {
@@ -82,31 +119,6 @@
                 "data": {
                   "name": "elevator L0"
                 }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": null
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "race",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "intakeCoral"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.0
-                }
               }
             ]
           }
@@ -116,9 +128,9 @@
           "data": {
             "commands": [
               {
-                "type": "path",
+                "type": "named",
                 "data": {
-                  "pathName": null
+                  "name": "alignToReefC"
                 }
               },
               {
@@ -128,45 +140,7 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "intakeCoral"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "arm hold"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "elevator L4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "alignToReefL"
-                }
-              },
-              {
-                "type": "race",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeCoral"
+                        "name": "elevator aHigh"
                       }
                     },
                     {
@@ -174,6 +148,12 @@
                       "data": {
                         "waitTime": 1.0
                       }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "arm algae"
+                      }
                     }
                   ]
                 }
@@ -182,79 +162,23 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "score mini"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
+                "type": "path",
+                "data": {
+                  "pathName": "I-J to score"
+                }
+              },
+              {
                 "type": "sequential",
                 "data": {
                   "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "arm hold"
-                      }
-                    },
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 0.1
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "arm intake"
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "elevator L0"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "k to source real"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "intakeCoral"
-          }
-        },
-        {
-          "type": "parallel",
-          "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": null
-                }
-              },
-              {
-                "type": "sequential",
-                "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "intakeCoral"
+                        "waitTime": 0.5
                       }
                     },
                     {
@@ -272,13 +196,25 @@
         {
           "type": "named",
           "data": {
-            "name": "intakeCoral"
+            "name": "elevator L4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "outtakeAlgae"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "elevator L0"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "1+1",
+  "folder": "New Folder",
   "choreoAuto": false
 }
