@@ -255,7 +255,7 @@ public class SwerveDrive extends SubsystemBase {
 
     public void updateVisionOdo() {
         LimelightHelpers.SetRobotOrientation(
-            LimelightConstants.name,
+            LimelightConstants.reefLimeName,
             getHeadingV().getDegrees(),
             gyro.getRate(),
             gyro.getPitch(),
@@ -264,7 +264,7 @@ public class SwerveDrive extends SubsystemBase {
             0
         );
         // LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightConstants.name);
-        LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightConstants.name);
+        LimelightHelpers.PoseEstimate vis = LimelightHelpers.getBotPoseEstimate_wpiBlue(LimelightConstants.reefLimeName);
 
         if (vis == null || Math.abs(gyro.getRate()) > 360 || vis.tagCount < 1)
             return;

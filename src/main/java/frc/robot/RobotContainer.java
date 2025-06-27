@@ -204,7 +204,7 @@ public class RobotContainer {
             driverC.y().onTrue(arm.setTargetOnly(Arm.State.DUNKING));
             
             //idk
-            driverC.leftTrigger(.02).or(operator.leftTrigger(.02)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name)));
+            driverC.leftTrigger(.02).or(operator.leftTrigger(.02)).onTrue(Commands.runOnce(() -> LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.reefLimeName)));
             
             //elevator
             //l1 and l3 used interchangably

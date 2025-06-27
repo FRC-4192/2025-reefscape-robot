@@ -23,7 +23,7 @@ public class TargetAlign extends Command {
 
     private static final double bumperLength = .914;
     private static final double bumperWidth = .902;
-    private static final double reefSeparation = .355;
+    private static final double reefSeparation = .332;
         
     public TargetAlign(SwerveDrive swerve, int pos, boolean forward, boolean strafe, boolean turn) {
         this.swerve = swerve;
@@ -49,12 +49,12 @@ public class TargetAlign extends Command {
         forwardController.reset();
         strafeController.reset();
         rotationController.reset();
-        LimelightHelpers.setLEDMode_ForceOn(LimelightConstants.name);
+        LimelightHelpers.setLEDMode_ForceOn(LimelightConstants.reefLimeName);
     }
 
     @Override
     public void execute() {
-        Pose3d pose = LimelightHelpers.getTargetPose3d_RobotSpace(LimelightConstants.name);
+        Pose3d pose = LimelightHelpers.getTargetPose3d_RobotSpace(LimelightConstants.reefLimeName);
         if (pose.getTranslation().getNorm() != 0 && pose.getRotation().getAngle() != 0 && pose.getTranslation().getNorm() < 1.5) {
             double rotationTarget = rotationController.calculate(Math.toDegrees(pose.getRotation().getY()), 0);
             double translationTarget=0.0;
@@ -102,8 +102,8 @@ public class TargetAlign extends Command {
     public void end(boolean interrupted) {
         swerve.drive(new ChassisSpeeds());
         if (interrupted)
-            LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.name);
+            LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.reefLimeName);
         else
-            LimelightHelpers.setLEDMode_ForceBlink(LimelightConstants.name);
+            LimelightHelpers.setLEDMode_ForceBlink(LimelightConstants.reefLimeName);
     }
 }
