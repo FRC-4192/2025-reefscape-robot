@@ -57,7 +57,7 @@ public class StationAlign extends Command {
 
     @Override
     public void execute() {
-        Pose3d pose = LimelightHelpers.getTargetPose3d_RobotSpace(LimelightConstants.reefLimeName);
+        Pose3d pose = LimelightHelpers.getTargetPose3d_RobotSpace(LimelightConstants.coralLimeName);
         if (pose.getTranslation().getNorm() != 0 && pose.getRotation().getAngle() != 0 && pose.getTranslation().getNorm() < 1.5) {
             double rotationTarget = rotationController.calculate(Math.toDegrees(pose.getRotation().getY()), 0);
             double translationTarget= -strafeController.calculate(pose.getX(), posArr[pos]);
@@ -68,26 +68,26 @@ public class StationAlign extends Command {
                 turn ? -rotationTarget : 0
             ));
         }
-        SmartDashboard.putNumber("Vision Angle", Math.toDegrees(pose.getRotation().getX()));
-        SmartDashboard.putNumber("Vision Offset", pose.getX());
-        SmartDashboard.putNumber("Vision Dist", pose.getTranslation().getNorm());
-        SmartDashboard.putNumber("Tag X error", forwardController.getError());
-        SmartDashboard.putNumber("Tag Y error", strafeController.getError());
-        SmartDashboard.putNumber("Tag R error", rotationController.getError());
+        SmartDashboard.putNumber("station Vision Angle", Math.toDegrees(pose.getRotation().getX()));
+        SmartDashboard.putNumber("station Vision Offset", pose.getX());
+        SmartDashboard.putNumber("station Vision Dist", pose.getTranslation().getNorm());
+        SmartDashboard.putNumber("station Tag X error", forwardController.getError());
+        SmartDashboard.putNumber("station Tag Y error", strafeController.getError());
+        SmartDashboard.putNumber("station Tag R error", rotationController.getError());
     }
 
     @Override
     public boolean isFinished() {
         return rotationController.atSetpoint() && strafeController.atSetpoint() && forwardController.atSetpoint();
     }
-
+ 
     @Override
     public void end(boolean interrupted) {
         swerve.drive(new ChassisSpeeds());
         if (interrupted)
-            LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.reefLimeName);
+            LimelightHelpers.setLEDMode_ForceOff(LimelightConstants.coralLimeName);
         else
-            LimelightHelpers.setLEDMode_ForceBlink(LimelightConstants.reefLimeName);
+            LimelightHelpers.setLEDMode_ForceBlink(LimelightConstants.coralLimeName);
     }
 
 

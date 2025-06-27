@@ -22,6 +22,7 @@ import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AutoScore;
+import frc.robot.commands.StationAlign;
 import frc.robot.commands.TargetAlign;
 import frc.robot.commands.TeleopSwerve;
 import frc.robot.subsystems.*;
@@ -71,7 +72,7 @@ public class RobotContainer {
             elevator.setDefaultCommand(elevator.stayPID());
             arm.setDefaultCommand(arm.stayPID());
     
-            take.setDefaultCommand(take.runIntake(
+            take.setDefaultCommand(take.runOuttake(
                     () -> operator.getRightTriggerAxis() - 1 * operator.getLeftTriggerAxis() + driver.getRightTriggerAxis() - 1 * driver.getLeftTriggerAxis()
             )); 
             // atake.setDefaultCommand(atake.runIntake(() -> .1));
@@ -142,6 +143,10 @@ public class RobotContainer {
             NamedCommands.registerCommand("alignToReefL", true ? new TargetAlign(swerve, 2).raceWith(new WaitCommand(1.5)) : new InstantCommand());
             NamedCommands.registerCommand("alignToReefR", true ? new TargetAlign(swerve, 1).raceWith(new WaitCommand(1.5)) : new InstantCommand());
             NamedCommands.registerCommand("alignToReefC", true ? new TargetAlign(swerve, 0).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+            
+            NamedCommands.registerCommand("alignToStationL", true ? new StationAlign(swerve, 2).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+            NamedCommands.registerCommand("alignToStationR", true ? new StationAlign(swerve, 0).raceWith(new WaitCommand(1.5)) : new InstantCommand());
+            NamedCommands.registerCommand("alignToStationC", true ? new StationAlign(swerve, 1).raceWith(new WaitCommand(1.5)) : new InstantCommand());
             // NamedCommands.registerCommand("score", new InstantCommand());
             // NamedCommands.registerCommand("score", new SequentialCommandGroup(
             //         take.runOuttake(()->1).raceWith(new WaitCommand(1.5)),
@@ -299,6 +304,11 @@ public class RobotContainer {
             // .whileTrue(atake.runIntake( () -> 1 * operator.getLeftY() ))
             // .whileFalse(atake.runIntake( ()-> .1 ));
 
+            // station auto align
+            operator.leftBumper().and(operator.rightBumper()).whileTrue(testing ? new StationAlign(swerve, 1, false, false, false) : new StationAlign(swerve, 1));
+            operator.leftBumper().and(() -> !operator.rightBumper().getAsBoolean()).whileTrue(testing ? new StationAlign(swerve, 0, false, false, false) : new StationAlign(swerve, 0));
+            operator.rightBumper().and(() -> !operator.leftBumper().getAsBoolean()).whileTrue(testing ? new StationAlign(swerve, 2, false, false, false) : new StationAlign(swerve, 2));
+ 
 
             // new Trigger( () -> (arm.getState() == Arm.State.ALGAE || op.getYButton() ) ).whileTrue(
             //     atake.runIntake(
