@@ -12,9 +12,12 @@ import frc.robot.subsystems.SwerveDrive;
 public class TargetAlign extends Command {
     private final SwerveDrive swerve;
     private final int pos;
+    private final double forwardOffset;
     private final boolean forward;
     private final boolean strafe;
     private final boolean turn;
+
+
 
     private final PIDController forwardController = new PIDController(2.5, 0, 0.0001);
     private final PIDController strafeController = new PIDController(2.5, 0, 0.0001);
@@ -25,11 +28,12 @@ public class TargetAlign extends Command {
     private static final double bumperWidth = .902;
     private static final double reefSeparation = .332;
         
-    public TargetAlign(SwerveDrive swerve, int pos, boolean forward, boolean strafe, boolean turn) {
+    public TargetAlign(SwerveDrive swerve, int pos, double forwardOffset, boolean forward, boolean strafe, boolean turn) {
         this.swerve = swerve;
         this.pos = pos;
         this.forward = forward;
         this.strafe = strafe;
+        this.forwardOffset = forwardOffset;
         this.turn = turn;
 
         forwardController.setTolerance(0.02, 0.05);
@@ -38,8 +42,8 @@ public class TargetAlign extends Command {
 
         addRequirements(swerve);
     }
-    public TargetAlign(SwerveDrive swerve, int pos) {
-        this(swerve, pos, true, true, true);
+    public TargetAlign(SwerveDrive swerve, int pos,double forwardOffset) {
+        this(swerve, pos,forwardOffset, true, true, true);
     }
     
     @Override
@@ -78,7 +82,7 @@ public class TargetAlign extends Command {
                     break;
             }
 
-            double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2);
+            double forwardTarget = forwardController.calculate(pose.getZ(), bumperLength/2 + forwardOffset);
             swerve.drive(new ChassisSpeeds(
                 forward ? -forwardTarget : 0,
                 strafe ? -translationTarget : 0,

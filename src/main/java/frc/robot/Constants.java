@@ -99,7 +99,7 @@ public final class Constants {
                 .withSupplyCurrentLimit(40)
                 .withStatorCurrentLimit(40))
             .withMotorOutput(new MotorOutputConfigs()
-                .withInverted(InvertedValue.CounterClockwise_Positive)
+                .withInverted(InvertedValue.Clockwise_Positive)
                 .withNeutralMode(NeutralModeValue.Coast));
 
         public static ElevatorFeedforward feedforward = new ElevatorFeedforward(0.08, 0.42, 0, 0);//.12,.42
@@ -215,11 +215,10 @@ public final class Constants {
 
         // order: fl, fr, bl, br
         public static final ModuleConstants[] moduleConstants = new ModuleConstants[] {
-            new ModuleConstants(1, 8, 10, Rotation2d.fromDegrees(148.88)), //-30.4980046875
-            new ModuleConstants(7, 6, 11, Rotation2d.fromDegrees(-151.73)), //28.652343749999996
-            new ModuleConstants(5, 4, 12, Rotation2d.fromDegrees(-68.64)), //-118.30078125, 114
-            new ModuleConstants(3, 2, 13, Rotation2d.fromDegrees(159.69) //-161.71875, -23
-            )
+            new ModuleConstants(1, 0, 8, Rotation2d.fromDegrees(150.908)), //148.88
+            new ModuleConstants(3, 2, 11, Rotation2d.fromDegrees(65.566)),//-151.73
+            new ModuleConstants(7, 6, 10, Rotation2d.fromDegrees(61.875)),  //-110.65 
+            new ModuleConstants(5, 4, 9, Rotation2d.fromDegrees(-64.951))   //159.69
             };
 
         public static final class ModuleConstants {

@@ -26,7 +26,7 @@ import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;;
 
 public class DeepHang extends SubsystemBase {
-    private final SparkFlex motor, motor2;
+    private final SparkFlex motor;
 
     // private final TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(1, 2);
     // private final ProfiledPIDController controller = new ProfiledPIDController(1, 0, .01, constraints);
@@ -59,12 +59,10 @@ public class DeepHang extends SubsystemBase {
     }
     
     public DeepHang() {
-        motor = new SparkFlex(17, MotorType.kBrushless);
-        motor2 = new SparkFlex(18, MotorType.kBrushless);
+        motor = new SparkFlex(18, MotorType.kBrushless);
 
         motor.configure(HangConstants.hangConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-        motor2.configure(HangConstants.hangConfig.follow(motor,true), ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-        // controller.setTolerance(.015);
+               // controller.setTolerance(.015);
         // controller.reset(getPosition().in(Units.Radians), getVelocity().in(Units.RadiansPerSecond));
         simpleController.setTolerance(.01);
 
@@ -87,11 +85,11 @@ public class DeepHang extends SubsystemBase {
     }
 
     public double getCurrent() {
-        return motor.getOutputCurrent() + motor2.getOutputCurrent();
+        return motor.getOutputCurrent() ;
     }
 
     public double getMotorCurrent(int x){
-        return (x==1) ?  motor.getOutputCurrent() : motor2.getOutputCurrent();
+        return   motor.getOutputCurrent() ;
     }
 
     public Command setTargetStay(State state) {

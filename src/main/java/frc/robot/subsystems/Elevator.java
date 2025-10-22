@@ -34,13 +34,15 @@ public class Elevator extends SubsystemBase {
     private MutDistance offsetOffset = Units.Meters.zero().mutableCopy();
 
     public enum State {
-        ALGAELOW(0.26162),
-        ALGAEHIGH(0.6925),
+        ALGAELOW(0.9),
+        ALGAEHIGH(0.8),
+        INTAKE(0.3),
         L0(0.00),
-        L1(0.231),
-        L2(0.0),//.167
-        L3(0.167), //.24 
-        L4(0.74); //.75
+        L1(0.4),
+        L2(0.6),//.167
+        L3(0.7), //.24 
+        L4(1),
+        MAX(1.3); //.75
 
         private final Distance position;
 
@@ -187,7 +189,7 @@ public class Elevator extends SubsystemBase {
 
 
     public static Distance motorToHeight(double rotations) {
-        return Units.Inches.of(rotations * 2. * Math.PI / 3. * .8755);
+        return Units.Inches.of(rotations * 2. * Math.PI / 3. * 1.716);
     }
 
     public static double feedforward(double velocity) {

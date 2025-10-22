@@ -382,6 +382,12 @@
               }
             ]
           }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": []
+          }
         }
       ]
     }

@@ -53,7 +53,7 @@ public class GroundWrist extends SubsystemBase {
     }
     
     public GroundWrist() {
-        motor = new TalonFX(17);
+        motor = new TalonFX(18);
         motor.getConfigurator().apply(GroundConstants.wristConfig);
 
         controller.setTolerance(.015);

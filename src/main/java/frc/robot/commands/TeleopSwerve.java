@@ -62,7 +62,7 @@ public class TeleopSwerve extends Command {
 
         double translationVal = tipFilterX.calculate(MathUtil.applyDeadband(-drive.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed));
         double strafeVal = tipFilterY.calculate(MathUtil.applyDeadband(-strafe.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTransSpeed));
-        double rotationVal = MathUtil.applyDeadband(-turn.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed);
+        double rotationVal = MathUtil.applyDeadband(turn.getAsDouble(), DriverConstants.stickDeadband)  * (isSlow.getAsBoolean() ? DriverConstants.swerveSlowSpeed : DriverConstants.swerveMaxTurnSpeed);
 
         swerve.drive(
             new Pose2d(
